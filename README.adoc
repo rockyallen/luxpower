@@ -72,25 +72,3 @@ You don't need to load any data.
 There are no changes you can make (TBD).
 
 
-== TODO
-
-. Make modelling configuration editable.
-
-. Fix daily analysis tab. DONE
-
-. Replicate the "standard" payback time calculation using either modelled or real data.
-
-. Do a proper payback time calculation.
-
-. Develop method to optimise battery capacity.
-
-. Put start-up dialog to choose modelling or actual?
-There isn't much commonality between the two.
-
-. Use proper dates/months on the time axes. 
-
-. Add battery to model.
-
-. Rename "Show Arrays to an option group "Inputs" or "Outputs"
-
-. Add month display to month slider
