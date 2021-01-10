@@ -1,0 +1,96 @@
+:experimental:
+
+= Solar PV Analysis and Modelling Tool
+
+== Introduction
+
+Analysis reads the .XLS files produced by Lux Power and produces the normal daily and yearly graphs (on the (A) tabs).
+
+In addition, it calculates the following measures of performance:
+
+Rated Power:: Sum of the nominal maximum power outputs of all the PV modules. 
+Also known as kWp.
+
+Rated Capacity:: 
+Energy output if the system produces maximum power 24/7 for an entire year.
+
+Capacity factor:: 
+Actual energy produced divided by the rated capacity. 
+If the data only covers part-year, this is for that period only. 
+10% is typical for the UK.
+
+Self use::
+The fraction of generated power that is consumed internally rather than being exported. 
+Higher is better, but it inevitably drops off for large arrays where you generate much more than you consume in a year.
+
+Battery utilisation::
+Daily discharge energy divided by the nominal capacity of the battery.
+Theoretically it can be more than 100%, but 30% is typical.
+50% is good. 
+
+Battery efficiency::
+Discharge energy divided by the charge energy for a particular period. 
+This is also known as the round-trip efficiency. 90% is good.
+
+The modelling tabs (M) use standard formulae to predict the output  (power and energy) from the system by through the day and year.
+
+The main use is to compare different configurations to optimise placement, inverter choice etc. 
+You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
+
+== Usage
+
+=== Analysis
+
+. Download the data to any folder, and note where the folder is.
+Put each year's data in a separate folder: the tool can only display 1 year at a time.
+
+. Start the app (currently only possible through the Maven script)
+
+. On the import tab, use btn:[Import], and find the data folder when asked.
+
+. When the data has loaded, use btn:[Analyse] to populate the other tabs.
+
+. Activate the Power, Energy and Battery tabs as required.
+
+. Use the month sliders to scroll through the year a month at a time.
+
+. Use the smoothing sliders to make trends more visible (but do not try to read specific values when the data is smoothed).
+
+You only need to use btn:[Import] the first time you use the app, or if you have changed any files to the data folder.
+Otherwise use btn:[Cache] which will load much faster.
+
+=== Modelling
+
+. Start the app.
+You don't need to load any data.
+
+. Activate the Power, Energy and Summary tabs as required.
+
+. Use the Month sliders to scroll through the year a month at a time.
+
+. The model is only for the single configuration shown. 
+There are no changes you can make (TBD).
+
+
+== TODO
+
+. Make modelling configuration editable.
+
+. Fix daily analysis tab. DONE
+
+. Replicate the "standard" payback time calculation using either modelled or real data.
+
+. Do a proper payback time calculation.
+
+. Develop method to optimise battery capacity.
+
+. Put start-up dialog to choose modelling or actual?
+There isn't much commonality between the two.
+
+. Use proper dates/months on the time axes. 
+
+. Add battery to model.
+
+. Rename "Show Arrays to an option group "Inputs" or "Outputs"
+
+. Add month display to month slider
