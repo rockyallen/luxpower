@@ -94,9 +94,9 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         traceImported.setName("Imported");
         traceExported.setName("Exported");
         traceSelfUse.setName("Self Use");
-        tracePv1.setName(SystemData.pv1.name);
-        tracePv2.setName(SystemData.pv2.name);
-        tracePv3.setName(SystemData.pv3.name);
+        tracePv1.setName(SystemData.west.name);
+        tracePv2.setName(SystemData.east.name);
+        tracePv3.setName(SystemData.garage.name);
         sc.setCreateSymbols(false);
         sc.getData().addAll(traceGeneration);
 

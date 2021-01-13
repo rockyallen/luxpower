@@ -104,9 +104,9 @@ public class DataStoreXls<T> extends Task {
 
                         record.setDate(sf.parse(row.getCell(1).getStringCellValue()));
 
-                        record.setVpv1((float) Float.valueOf(row.getCell(3).getStringCellValue()));
-                        record.setVpv2((float) Float.valueOf(row.getCell(4).getStringCellValue()));
-                        record.setVpv3((float) Float.valueOf(row.getCell(5).getStringCellValue()));
+                        record.setVpv1(Float.valueOf(row.getCell(3).getStringCellValue()));
+                        record.setVpv2(Float.valueOf(row.getCell(4).getStringCellValue()));
+                        record.setVpv3(Float.valueOf(row.getCell(5).getStringCellValue()));
 
                         String s = row.getCell(7).getStringCellValue();
                         record.setSoc((float) Float.valueOf(s.substring(0, s.length() - 1)));
@@ -115,10 +115,13 @@ public class DataStoreXls<T> extends Task {
                         record.setPpv2((float) row.getCell(9).getNumericCellValue());
                         record.setPpv3((float) row.getCell(10).getNumericCellValue());
 
+                        record.setpCharge((float) row.getCell(11).getNumericCellValue());
+                        record.setpDisCharge((float) row.getCell(12).getNumericCellValue());
+                        
                         record.setPinv((float) row.getCell(17).getNumericCellValue());
                         record.setpToGrid((float) row.getCell(26).getNumericCellValue());
                         record.setpToUser((float) row.getCell(27).getNumericCellValue());
-                        
+  
                         record.seteInvDay(Float.valueOf(row.getCell(32).getStringCellValue()));
                         record.seteChgDay(Float.valueOf(row.getCell(34).getStringCellValue()));
                         record.seteDisChgDay(Float.valueOf(row.getCell(35).getStringCellValue()));
