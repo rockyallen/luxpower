@@ -45,7 +45,7 @@ public class DatedValueFilter extends RecordFilter<DatedValue> {
 //    public Collection<Double> values(int i, Period p) {
 //        List<Double> ret = new ArrayList<>();
 //
-//        RecordFilter<DatedValue> filter = new RecordFilter<>(recs);
+//        DataStore.RecordFilter<DatedValue> filter = new DataStore.RecordFilter<>(recs);
 //
 //        List<DatedValue> results = filter.period(i, p).result();
 //        for (DatedValue r : results) {

@@ -1,6 +1,7 @@
 package solar.app;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -12,11 +13,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import solar.model.DataSource;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
 import solar.model.Listener;
 import solar.model.Period;
+import solar.model.DataStore;
 import solar.model.Record;
 import solar.model.RecordFilter;
 import solar.model.SystemData;
@@ -40,12 +41,11 @@ public class FxBatteryTab extends BorderPane implements Listener {
     private final XYChart.Series traceChg = new XYChart.Series();
     private final XYChart.Series traceDischg = new XYChart.Series();
 
-    private final DataSource ds;
+    private Collection<Record> records = null;
 
-    public FxBatteryTab(DataSource ds) {
+    public FxBatteryTab() {
 
         super();
-        this.ds = ds;
 
 //        nominalCapacityBox.setTooltip(new Tooltip("Nominal capacity of the battries. (Not the same as the effective capacity which allows for a safe DOD)"));
 //        chargeBox.setTooltip(new Tooltip("Daily charge"));
@@ -85,7 +85,6 @@ public class FxBatteryTab extends BorderPane implements Listener {
         p.getChildren().addAll(sc);
         setCenter(p);
 
-        ds.addListener(this);
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
@@ -104,11 +103,11 @@ public class FxBatteryTab extends BorderPane implements Listener {
     private void analyse() {
         totalDischarge.clear();
         totalCharge.clear();
-//            System.out.println("gr="+ds.getRecords().size());
-        List<Record> endOfDays = new RecordFilter<Record>(ds.getRecords()).endOfPeriod(Period.DAY).result();
+//            System.out.println("gr="+ds.getDataStore.Records().size());
+        List<Record> endOfDays = new RecordFilter<Record>(records).endOfPeriod(Period.DAY).result();
 //            System.out.println(endOfDays.size());
         for (Record e : endOfDays) {
-  //          System.out.println(e);
+            //          System.out.println(e);
             totalCharge.add(new DatedValue(e.getDate(), e.geteChgDay()));
             totalDischarge.add(new DatedValue(e.getDate(), e.geteDisChgDay()));
         }
@@ -119,7 +118,7 @@ public class FxBatteryTab extends BorderPane implements Listener {
         nominalCapacityBox.setText(String.format("%3.1f kWh", capacity));
         chargeBox.setText(String.format("%3.1f kWh", chg));
         dischargeBox.setText(String.format("%3.1f kWh", dis));
-        if (ds.getRecords().size() > 0) {
+        if (records.size() > 0) {
             double mean = dis / totalDischarge.size();
             dailyBox.setText(String.format("%3.1f kWh", mean));
             utilisationBox.setText(String.format("%3.1f%%", 100 * mean / capacity));
@@ -144,7 +143,8 @@ public class FxBatteryTab extends BorderPane implements Listener {
     }
 
     @Override
-    public void changed() {
+    public void changed(Collection<Record> records, String description) {
+        this.records = records;
         analyse();
         plot();
     }

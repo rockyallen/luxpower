@@ -2,8 +2,13 @@ package solar.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,30 +16,52 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author rocky
  */
-public class DataSourceDataTest {
-
-
-    public DataSourceDataTest() {
+public class DataStoreCacheTest {
+    
+    public DataStoreCacheTest() {
     }
+    
+    @BeforeAll
+    public static void setUpClass() {
+    }
+    
+    @AfterAll
+    public static void tearDownClass() {
+    }
+    
+    @BeforeEach
+    public void setUp() {
+    }
+    
+    @AfterEach
+    public void tearDown() {
+    }
+    
+    
+        @Test
+    public void testPutAndGet() throws IOException, ClassNotFoundException {
 
-    @Test
-    public void testSerialisation() throws IOException, ClassNotFoundException {
-
-    DataSourceData instance = new DataSourceData();
+    DataStoreCache instance = new DataStoreCache();
+    
+    List<Record> input = new ArrayList<>();
         Record r1 = makeRecord(new Date(120, 03, 04), 1, 0.1f);
         Record r2 = makeRecord(new Date(121, 01, 01), 1, 34.5f);
         Record r3 = makeRecord(new Date(121, 03, 02), 1, 0.6f);
         Record r4 = makeRecord(new Date(121, 03, 04), 7, 0.5f);
-        instance.records.add(r1);
-        instance.records.add(r2);
-        instance.records.add(r3);
-        instance.records.add(r4);
+        input.add(r1);
+        input.add(r2);
+        input.add(r3);
+        input.add(r4);
 
+        assertTrue(new DataStoreCache().put(input));
 
-        DataSourceData result1 = (DataSourceData) SerialisationHelper.testRoundTrip(instance);
+        Collection<Record> results = new DataStoreCache().get();
+        
+        assertNotNull(results);
+        
         // move into a list for easier checking
         List<DateProvider> result = new ArrayList<>();
-        result.addAll(result1.records);
+        result.addAll(results);
         assertEquals(4, result.size());
         compareRecord(r1,result.get(0));
         compareRecord(r2,result.get(1));
@@ -45,21 +72,29 @@ public class DataSourceDataTest {
     @Test
     public void testRecordsAreSorted() {
 
-    DataSourceData instance = new DataSourceData();
+    List<Record> input = new ArrayList<>();
         Record r1 = makeRecord(new Date(121, 01, 01), 1, 34.5f);
         Record r2 = makeRecord(new Date(121, 03, 04), 7, 0.5f);
         Record r3 = makeRecord(new Date(120, 03, 04), 1, 0.1f);
         Record r4 = makeRecord(new Date(121, 03, 02), 1, 0.6f);
         
-        instance.records.add(r1);
-        instance.records.add(r2);
-        instance.records.add(r3);
-        instance.records.add(r4);
+        input.add(r1);
+        input.add(r2);
+        input.add(r3);
+        input.add(r4);
 
+
+        assertTrue(new DataStoreCache().put(input));
+
+        Collection<Record> results = new DataStoreCache().get();
+        
+        assertNotNull(results);
+        
         // should be 3, 1, 4, 2
+
         // move into a list for easier checking
-        List<DateProvider> result = new ArrayList<>();
-        result.addAll(instance.records);
+        List<Record> result = new ArrayList<>();
+        result.addAll(results);
         assertEquals(4, result.size());
         compareRecord(r3,result.get(0));
         compareRecord(r1,result.get(1));
@@ -78,5 +113,6 @@ public class DataSourceDataTest {
     private void compareRecord(DateProvider r1, DateProvider r2) {
         assertEquals(r1.getDate(), r2.getDate());
     }
+
 
 }
