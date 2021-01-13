@@ -32,7 +32,6 @@ public class FxHtmlTab extends BorderPane {
         setCenter(p);
 
         URL css = getClass().getResource("style.css");
-//        System.out.println(css);
         webView.getEngine().setUserStyleSheetLocation(css.toString());
     }
     

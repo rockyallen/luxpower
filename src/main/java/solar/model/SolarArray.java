@@ -28,17 +28,38 @@ public class SolarArray {
      */
     public final double power;
     public final String name;
+    public final String description;
 
-    public SolarArray(String name, double area, double tilt, double azimuth, double efficiency) {
-        this.name=name;
+    public SolarArray(String name, String description, double area, double tilt, double azimuth, double efficiency) {
+        this.name = name;
+        this.description = description;
         this.area = area;
         this.tilt = tilt;
         this.azimuth = azimuth;
         this.efficiency = efficiency;
         this.power = area * efficiency * 1000.0;
     }
-    
-   @Override
+
+    @Override
     public String toString() {
-        return String.format("Array: name='%s' power=%4.0f", name, power);
-    }}
+        return String.format("Array: '%s' %s power=%4.0f", name, description, power);
+    }
+
+    /**
+     * The maximum (sunny day) amount of power the array could produce.
+     *
+     * This value must be scaled back to allow for bad weather, then potentially
+     * throttled back by the inverter,
+     *
+     * @param dday Year day 0-364
+     * @param hour Solar hour
+     * @param array Array to be calculated
+     *
+     * @return Power Watts
+     */
+    public double availablePower(int dday, double hour) {
+        double insolation = Calculator.insSolarRadiation(hour, SystemData.latitude, SystemData.longitude, 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
+        return Math.max(0, efficiency * area * insolation);
+    }
+
+}

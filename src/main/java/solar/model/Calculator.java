@@ -94,8 +94,7 @@ public class Calculator {
 
     /**
      *
-     * KA: Returns the solar declination angle in degrees. This is the NOT angle
-     * of sun to the horizontal at solar noon on that date, but the offset to be
+     * KA: Returns the solar declination angle in degrees. This is the offset to be
      * applied to the latitude due to the tilt of the earth.
      *
      * https://www.pveducation.org/pvcdrom/properties-of-sunlight/declination-angle

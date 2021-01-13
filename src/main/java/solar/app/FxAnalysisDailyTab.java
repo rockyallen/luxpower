@@ -12,13 +12,13 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import solar.model.DataSource;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
 import solar.model.Listener;
 import solar.model.Period;
 import solar.model.Record;
 import solar.model.RecordFilter;
+import solar.model.SystemData;
 
 /**
  * Daily performance averaged per month, with smoothing
@@ -27,48 +27,27 @@ import solar.model.RecordFilter;
  */
 public class FxAnalysisDailyTab extends BorderPane implements Listener {
 
-//    FxSmoothingControl smoothing = new FxSmoothingControl();
     private final FxMonthControl monthControl = new FxMonthControl();
-    private CheckBox arraysCheckBox = new CheckBox("Show arrays");
-//    private final Text yieldBox = new Text();
-//    private final Text selfUseBox = new Text();
-//    private final Text selfUseRatioBox = new Text();
-//    private final Text consumptionBox = new Text();
-//    private final Text importBox = new Text();
-//    private final Text exportBox = new Text();
-//    private final Text capacityFactorBox = new Text();
-
-    // Collectors used to transfer data from the simulation ot the chart
-//    private final List<DatedValue> totalEast = new ArrayList<>();
-//    private final List<DatedValue> totalWest = new ArrayList<>();
-//    private final List<DatedValue> totalSouth = new ArrayList<>();
-//    private final List<DatedValue> totalGen = new ArrayList<>();
-//    private final List<DatedValue> totalImport = new ArrayList<>();
-//    private final List<DatedValue> totalExport = new ArrayList<>();
-//    private final List<DatedValue> totalConsumption = new ArrayList<>();
-//    private final List<DatedValue> totalSelfUse = new ArrayList<>();
+    private final CheckBox arraysCheckBox = new CheckBox("Inputs (otherwise outputs)");
     private final XYChart.Series traceGeneration = new XYChart.Series();
     private final XYChart.Series traceConsumption = new XYChart.Series();
     private final XYChart.Series traceExported = new XYChart.Series();
     private final XYChart.Series traceImported = new XYChart.Series();
     private final XYChart.Series traceSelfUse = new XYChart.Series();
-    private final XYChart.Series traceSouth = new XYChart.Series();
-    private final XYChart.Series traceEast = new XYChart.Series();
-    private final XYChart.Series traceWest = new XYChart.Series();
+    private final XYChart.Series tracePv1 = new XYChart.Series();
+    private final XYChart.Series tracePv2 = new XYChart.Series();
+    private final XYChart.Series tracePv3 = new XYChart.Series();
 
     private final NumberAxis xAxis = new NumberAxis(1, 24, 1);
     // Auto scale?
     private final NumberAxis yAxis = new NumberAxis(0.0, 5.0, 1.0);
     private final LineChart<Number, Number> sc = new LineChart<>(xAxis, yAxis);
 
-    private final DataSource ds;
+    private Collection<Record> records;
 
-    public FxAnalysisDailyTab(DataSource ds) {
+    public FxAnalysisDailyTab() {
 
         super();
-        this.ds = ds;
-
-        ds.addListener(this);
 
         monthControl.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
@@ -82,9 +61,9 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
             @Override
             public void changed(ObservableValue<? extends Boolean> ov,
                     Boolean old_val, Boolean new_val) {
-                show(traceEast, new_val);
-                show(traceWest, new_val);
-                show(traceSouth, new_val);
+                show(tracePv1, new_val);
+                show(tracePv2, new_val);
+                show(tracePv3, new_val);
                 show(traceConsumption, !new_val);
                 show(traceImported, !new_val);
                 show(traceExported, !new_val);
@@ -103,7 +82,6 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
         p.getChildren().addAll(new Text("Month"), monthControl);
-//        p.getChildren().addAll(new Text("Smoothing"), smoothing);
         p.getChildren().addAll(arraysCheckBox);
 
         setTop(p);
@@ -116,9 +94,9 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         traceImported.setName("Imported");
         traceExported.setName("Exported");
         traceSelfUse.setName("Self Use");
-        traceEast.setName("East");
-        traceWest.setName("West");
-        traceSouth.setName("South");
+        tracePv1.setName(SystemData.pv1.name);
+        tracePv2.setName(SystemData.pv2.name);
+        tracePv3.setName(SystemData.pv3.name);
         sc.setCreateSymbols(false);
         sc.getData().addAll(traceGeneration);
 
@@ -129,31 +107,19 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         p.getChildren().addAll(sc);
         setCenter(p);
 
-        ds.addListener(this);
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-//        p.getChildren().addAll(new Label("Consumption"), size(consumptionBox));
-//        p.getChildren().addAll(new Label("Generation"), size(yieldBox));
-//        p.getChildren().addAll(new Label("Export"), size(exportBox));
-//        p.getChildren().addAll(new Label("Import"), size(importBox));
-//        p.getChildren().addAll(new Label("Self use"), size(selfUseBox));
-//        p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
-//        p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
         setBottom(p);
     }
 
     private void analyse() {
 
-        Collection<Record> input = ds.getRecords();
-//        System.out.println("all records=" + input.size());
-//        Collection<Record> thisMonthRecords = new RecordFilter<Record>(input).period(monthControl.getMonth(), Period.MONTH).result();
-        Collection<Record> thisMonthRecords = new RecordFilter<Record>(input).period(monthControl.getMonth(), Period.MONTH).result();
+         Collection<Record> thisMonthRecords = new RecordFilter<Record>(records).period(monthControl.getMonth(), Period.MONTH).result();
 
-//        System.out.println("month records=" + thisMonthRecords.size());
-        traceEast.getData().clear();
-        traceWest.getData().clear();
-        traceSouth.getData().clear();
+        tracePv1.getData().clear();
+        tracePv2.getData().clear();
+        tracePv3.getData().clear();
         traceGeneration.getData().clear();
         traceImported.getData().clear();
         traceExported.getData().clear();
@@ -161,9 +127,9 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         traceSelfUse.getData().clear();
 
         for (int hour = 0; hour < 24; hour++) {
-            List<DatedValue> totalEast = new ArrayList<>();
-            List<DatedValue> totalWest = new ArrayList<>();
-            List<DatedValue> totalSouth = new ArrayList<>();
+            List<DatedValue> totalPv1 = new ArrayList<>();
+            List<DatedValue> totalPv2 = new ArrayList<>();
+            List<DatedValue> totalPv3 = new ArrayList<>();
             List<DatedValue> totalGen = new ArrayList<>();
             List<DatedValue> totalImport = new ArrayList<>();
             List<DatedValue> totalExport = new ArrayList<>();
@@ -172,17 +138,16 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
 
             RecordFilter<Record> filter = new RecordFilter<Record>(thisMonthRecords);
             List<Record> thisHour = filter.period(hour, Period.HOUR).result();
-//            System.out.println("hour " + hour + " points=" + thisHour.size());
             for (Record r : thisHour) {
 
-                totalWest.add(new DatedValue(r.getDate(), r.getPpv1()));
-                totalEast.add(new DatedValue(r.getDate(), r.getPpv2()));
-                totalSouth.add(new DatedValue(r.getDate(), r.getPpv3()));
+                totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));
+                totalPv2.add(new DatedValue(r.getDate(), r.getPpv2()));
+                totalPv3.add(new DatedValue(r.getDate(), r.getPpv3()));
                 
-                double generated = r.getPpv1() + r.getPpv2() + r.getPpv3();
+                double generated = r.getPinv();
                 double exported = r.getpToGrid();
                 double selfUse = generated - exported;
-                double imported = r.getpToUser(); // fixme
+                double imported = r.getpToUser();
                 double consumption = imported + selfUse;
                 
                 totalGen.add(new DatedValue(r.getDate(), generated));
@@ -191,22 +156,15 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
                 totalImport.add(new DatedValue(r.getDate(), imported));
                 totalConsumption.add(new DatedValue(r.getDate(), consumption));
             }
-            addPoint(traceEast, totalEast, hour, 0.001);
-            addPoint(traceWest, totalWest, hour, 0.001);
-            addPoint(traceSouth, totalSouth, hour, 0.001);
+            addPoint(tracePv1, totalPv1, hour, 0.001);
+            addPoint(tracePv2, totalPv2, hour, 0.001);
+            addPoint(tracePv3, totalPv3, hour, 0.001);
             addPoint(traceGeneration, totalGen, hour, 0.001);
             addPoint(traceExported, totalExport, hour, 0.001);
             addPoint(traceImported, totalImport, hour, 0.001);
             addPoint(traceSelfUse, totalSelfUse, hour, 0.001);
             addPoint(traceConsumption, totalConsumption, hour, 0.001);
         }
-//        yieldBox.setText(String.format("%3.0f kWh", totalGen.total()));
-//        importBox.setText(String.format("%3.0f kWh", totalImport.total()));
-//        exportBox.setText(String.format("%3.0f kWh", totalExport.total()));
-//        consumptionBox.setText(String.format("%3.0f kWh", totalConsumption.total()));
-//        selfUseBox.setText(String.format("%3.0f kWh", totalSelfUse.total()));
-//        selfUseRatioBox.setText(String.format("%3.1f%%", 100 * totalSelfUse.total() / totalGen.total()));
-//        capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGen.total() / SystemData.ratedCapacity));
     }
 
     private void plot() {
@@ -214,14 +172,13 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
     }
 
     @Override
-    public void changed() {
+    public void changed(Collection<Record> records, String description) {
+        this.records = records;
         analyse();
         plot();
     }
 
     private Text size(Text t) {
-//        t.setFill(new Paint(Color.red));
-//        setPrefSize(80, 12);
         return t;
     }
 
@@ -230,8 +187,8 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         if (points > 0) {
             DatedValueFilter filter = new DatedValueFilter(accumulator);
             double mean = filter.total() / points;
-            //System.out.println("hour=" + hour + " records=" + points + " mean=" + mean);
-            trace.getData().add(new XYChart.Data(hour+1, mean * scale));
+            // + 0.5 to plot in the middle of the hour
+            trace.getData().add(new XYChart.Data(hour+0.5, mean * scale));
         }
     }
 }

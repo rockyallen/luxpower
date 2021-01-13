@@ -4,15 +4,10 @@
 
 == Introduction
 
-Analysis reads the .XLS files produced by Lux Power and produces the normal daily and yearly graphs (on the (A) tabs).
+Analysis reads the .XLS files produced by Lux Power and graphs the power and energy from the system through the day and year.
+The modelling uses standard formulae to predict the same from the system description.
 
-In addition, it calculates the following measures of performance:
-
-Rated Power:: Sum of the nominal maximum power outputs of all the PV modules. 
-Also known as kWp.
-
-Rated Capacity:: 
-Energy output if the system produces maximum power 24/7 for an entire year.
+In both cases, it calculates the following measures of performance:
 
 Capacity factor:: 
 Actual energy produced divided by the rated capacity. 
@@ -44,7 +39,7 @@ You can also compare the model to the actual output to possibly detect hardware 
 . Download the data to any folder, and note where the folder is.
 Put each year's data in a separate folder: the tool can only display 1 year at a time.
 
-. Start the app (currently only possible through the Maven script)
+. Start the app (currently only possible through NetBeans)
 
 . On the import tab, use btn:[Import], and find the data folder when asked.
 
@@ -62,7 +57,7 @@ Otherwise use btn:[Cache] which will load much faster.
 === Modelling
 
 . Start the app.
-You don't need to load any data.
+Press btn:[Model] then btn:[Analyse].
 
 . Activate the Power, Energy and Summary tabs as required.
 
@@ -70,5 +65,4 @@ You don't need to load any data.
 
 . The model is only for the single configuration shown. 
 There are no changes you can make (TBD).
-
 

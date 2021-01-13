@@ -9,7 +9,7 @@ import java.util.List;
  *
  * eg to get the records for 10AM-11AM during May:
  *
- * @pre List<Record> f = new
+ * @pre List<DataStore.Record> f = new
  * RecordFilter(OriginalData).endOfDay().hour(10).get();
  *
  * All filter method return a new list (the original list is NEVER changed), but
@@ -26,7 +26,7 @@ public class RecordFilter<E extends DateProvider> {
     private List<E> current = new ArrayList<>();
 
     /**
-     * @param recs MUST be sorted by ascending Record.date.
+     * @param recs MUST be sorted by ascending DataStore.Record.date.
      * @param recs
      */
     public RecordFilter(Collection<E> recs) {
