@@ -17,8 +17,10 @@ public class DataStoreModel<T> extends Task {
     /**
      * Run simulation and convert the outputs into log records as if they had
      * come from the Lux Power.
-     * 
-     * pv3 is correctly modelled as attached to the sunnyboy, but as there isn't a separate field in Record for it, the output is added to the luxpower output.
+     *
+     * pv3 is correctly modelled as attached to the sunnyboy, but as there isn't
+     * a separate field in Record for it, the output is added to the luxpower
+     * output.
      *
      * @return
      */
@@ -27,6 +29,15 @@ public class DataStoreModel<T> extends Task {
 
         Collection<Record> records = new ArrayList<>();
         int dday = 0;
+
+        // Asemble components
+        EnergyStore battery = SystemData.battery;
+        SolarArray pv1 = SystemData.west;
+        SolarArray pv2 = SystemData.east;
+        SolarArray pv3 = SystemData.garage;
+        Inverter inv12 = SystemData.LuxPower;
+        Inverter inv3 = SystemData.SunnyBoy;
+
         for (int month = 0; month < 12; month++) {
             for (int date = 0; date < Calculator.daysPerMonth[month]; date++) {
                 // accumulators for each array
@@ -49,10 +60,10 @@ public class DataStoreModel<T> extends Task {
                 for (int solarHour = 0; solarHour < 24; solarHour += 1) {
                     // instantaneous power for each array
                     for (double fraction = 0; fraction < 0.99; fraction += stepSize) { // WRONG?
-                        double pv1Power = SystemData.pv1.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv2Power = SystemData.pv2.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv3Power = SystemData.pv3.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double inverterPower = SystemData.LuxPower.pout(pv1Power + pv2Power)+SystemData.SunnyBoy.pout(pv3Power);
+                        double pv1Power = pv1.availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double pv2Power = pv2.availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double pv3Power = pv3.availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double inverterPower = inv12.pout(pv1Power + pv2Power) + inv3.pout(pv3Power);
                         // accumulate over day
                         pv1DayTotal += pv1Power * stepSize;
                         pv2DayTotal += pv2Power * stepSize;
@@ -63,15 +74,30 @@ public class DataStoreModel<T> extends Task {
                         double selfUsePower = 0.0;
                         double importPower = 0.0;
                         double exportPower = 0.0;
+                        double pcharge = 0.0;
+                        double pdischarge = 0.0;
                         double consumptionPower = SystemData.HOURLY_CONSUMPTION[solarHour] * 1000;
 
                         if (inverterPower > consumptionPower) {
+                            // user first
                             selfUsePower = consumptionPower;
-                            exportPower = inverterPower - selfUsePower;
+                            // then battery
+                            double powerLeft = inverterPower - selfUsePower;
+                            double energyStored = battery.store(powerLeft * stepSize);
+                            // AVERAGE power over time step
+                            pcharge = energyStored / stepSize;
+                            // then export
+                            exportPower = powerLeft - pcharge;
                             importPower = 0.0;
                         } else {
+                            // user first
                             selfUsePower = inverterPower;
-                            importPower = consumptionPower - selfUsePower;
+                            // then from battery
+                            double powerNeeded = consumptionPower - selfUsePower;
+                            double energyNeeded = powerNeeded * stepSize;
+                            double energyTaken = battery.demand(energyNeeded);
+                            pdischarge = energyTaken / stepSize;
+                            importPower = powerNeeded - pdischarge;
                             exportPower = 0.0;
                         }
                         importedTotal += importPower * stepSize;
@@ -94,10 +120,15 @@ public class DataStoreModel<T> extends Task {
                         r.setpToUser((float) importPower);
                         r.seteToUserDay((float) importedTotal / 1000);
                         r.seteToGridDay((float) exportedTotal / 1000);
+                        r.setpCharge((float) pcharge);
+                        r.setpDisCharge((float) pdischarge);
+                        r.seteChgDay((float) battery.getCharge()/1000);
+                        r.seteDisChgDay((float) battery.getDischarge()/1000);
                         records.add(r);
                     }
                 }
                 dday++;
+                battery.resetLog();
             }
         }
         return records;
@@ -113,7 +144,6 @@ public class DataStoreModel<T> extends Task {
 //    public boolean put(Collection<Record> records) {
 //        throw new UnsupportedOperationException("Not supported");
 //    }
-
     /**
      * @return the weather
      */

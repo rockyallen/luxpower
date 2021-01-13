@@ -112,7 +112,7 @@ public class FxBatteryTab extends BorderPane implements Listener {
             totalDischarge.add(new DatedValue(e.getDate(), e.geteDisChgDay()));
         }
 
-        double capacity = SystemData.NBATTERIES * SystemData.BATTERY_CAPACITY;
+        double capacity = SystemData.battery.getActualCapacity();
         double chg = new DatedValueFilter(totalCharge).total();
         double dis = new DatedValueFilter(totalDischarge).total();
         nominalCapacityBox.setText(String.format("%3.1f kWh", capacity));

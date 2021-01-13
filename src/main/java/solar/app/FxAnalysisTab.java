@@ -21,9 +21,9 @@ import solar.model.Period;
 import solar.model.Record;
 import solar.model.RecordFilter;
 import solar.model.SystemData;
-import static solar.model.SystemData.pv1;
-import static solar.model.SystemData.pv2;
-import static solar.model.SystemData.pv3;
+import static solar.model.SystemData.west;
+import static solar.model.SystemData.east;
+import static solar.model.SystemData.garage;
 
 /**
  *
@@ -90,9 +90,9 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         sc.setPrefSize(10000, 10000);
         xAxis.setLabel("Day");
         yAxis.setLabel("kWh");
-        tracePv1.setName(SystemData.pv1.name);
-        tracePv2.setName(SystemData.pv2.name);
-        tracePv3.setName(SystemData.pv3.name);
+        tracePv1.setName(SystemData.west.name);
+        tracePv2.setName(SystemData.east.name);
+        tracePv3.setName(SystemData.garage.name);
         traceGeneration.setName("Generation");
         traceConsumption.setName("Consumption");
         traceImported.setName("Imported");
@@ -156,7 +156,7 @@ public class FxAnalysisTab extends BorderPane implements Listener {
             totalConsumption.add(new DatedValue(r.getDate(), imported + selfUse));
         }
 
-        final double ratedPower = (pv3.power + pv2.power + pv1.power) / 1000.0; // kW
+        final double ratedPower = (garage.power + east.power + west.power) / 1000.0; // kW
         final double ratedCapacity = ratedPower * 365 * 24; // kW
 
         double totalGenTotal = new DatedValueFilter(totalGen).total();

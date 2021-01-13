@@ -14,9 +14,9 @@ import solar.model.Period;
 import solar.model.DataStore;
 import solar.model.Record;
 import solar.model.SystemData;
-import static solar.model.SystemData.pv1;
-import static solar.model.SystemData.pv2;
-import static solar.model.SystemData.pv3;
+import static solar.model.SystemData.west;
+import static solar.model.SystemData.east;
+import static solar.model.SystemData.garage;
 
 /**
  *
@@ -49,9 +49,9 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
         sb.append("[cols=\"^^^^^^^^\", options=\"header\"]\n");
         sb.append("|===\n");
         sb.append("|Month");
-        sb.append("|").append(SystemData.pv1.name).append(" kWh");
-        sb.append("|").append(SystemData.pv2.name).append(" kWh");
-        sb.append("|").append(SystemData.pv3.name).append(" kWh");
+        sb.append("|").append(SystemData.west.name).append(" kWh");
+        sb.append("|").append(SystemData.east.name).append(" kWh");
+        sb.append("|").append(SystemData.garage.name).append(" kWh");
         sb.append("|Inverter kWh |Import kWh |Export kWh |Consumption kWh | Self-use kWh |Self-use |Capacity Factor\n");
         sb.append("\n");
         SimpleDateFormat f = new SimpleDateFormat("MMM");
@@ -76,7 +76,7 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
 
     private void doRow(StringBuilder sb, int month, Period period, List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalGen, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption) {
         {
-        final double ratedPower = (SystemData.pv3.power + SystemData.pv2.power + SystemData.pv1.power) / 1000.0; // kW
+        final double ratedPower = (SystemData.garage.power + SystemData.east.power + SystemData.west.power) / 1000.0; // kW
         final double ratedCapacity = ratedPower * 365 * 24; // kW
             DatedValueFilter filter = new DatedValueFilter(totalGen);
             filter.period(month, period);

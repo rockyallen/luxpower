@@ -1,66 +1,92 @@
 package solar.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- *
+ * A battery.
+ * Efficiency is charging efficiency, discharge efficiency is 100%.
+ * 
+ * Charge and discharge currents are not limited.
+ * 
  * @author rocky
  */
 public class EnergyStore {
 
-    private final double capacity;
-    double currentEnergy = 0.0;
-    List<Double> log = new ArrayList<Double>();
-    private double max;
+    private final String name;
+    private final double actualCapacity;
+    private final double nominalCapacity;
+    private final double efficiency;
+
+    private double currentEnergy = 0.0;
+    private double charge = 0.0;
+    private double discharge = 0;
 
     /**
-     * Maximum storage capacity, kWh
+     * Maximum storage capacity, Wh
      *
-     * @param capacity
+     * @param name Short descriptive name
+     * @param description Full description
+     * @param nominalCapacity Nominal battery capacity Wh
+     * @param effectiveCapacity Wh Useful battery capacity
      */
-    public EnergyStore(double capacity) {
-        this.capacity = capacity;
+    public EnergyStore(String name, String description, double nominalCapacity, double effectiveCapacity, double efficiency) {
+        this.name = name;
+        this.nominalCapacity = nominalCapacity;
+        this.actualCapacity = effectiveCapacity;
+        this.efficiency = efficiency;
+        if (effectiveCapacity > nominalCapacity) {
+            throw new IllegalArgumentException("effective capacity must be less than nominal");
+        }
+        if (effectiveCapacity < 0.0) {
+            throw new IllegalArgumentException("effective capacity must be greater than or equal to 0");
+        }
+        if (efficiency < 0.1) {
+            throw new IllegalArgumentException("efficiency must be greater than or equal to 0.1");
+        }
+        if (efficiency > 1.0) {
+            throw new IllegalArgumentException("efficiency must be less than or equal to 1.0");
+        }
     }
 
     /**
      * Try to add some energy in it.
      *
-     * @param energy kWh
+     * @param energy Wh
      * @return the actual amount added.
      */
     public double store(double energy) {
-        double toFill = getCapacity() - currentEnergy;
+        double ret = 0.0;
+        double toFill = (getEffectiveCapacity() - getCurrentEnergy())/efficiency;
         if (toFill < energy) {
             // top it up
-            currentEnergy = getCapacity();
-            max = getCapacity();
-            return toFill;
+            currentEnergy = getEffectiveCapacity();
+            ret = toFill;
         } else {
             // store it all
-            currentEnergy += energy;
-            max = Math.max(max, currentEnergy);
-            return energy;
+            currentEnergy += energy*efficiency;
+            ret = energy;
         }
+        charge += ret;
+        return ret;
     }
 
     /**
-     * Try to remove energy from it.
+     * Try to draw energy from it.
      *
-     * @param energy kWh
+     * @param energy Wh
      * @return the actual amount removed.
      */
     public double demand(double energy) {
-        if (currentEnergy > energy) {
+        double ret = 0.0;
+        if (getCurrentEnergy() > energy) {
             // you can have it all
             currentEnergy -= energy;
-            return energy;
+            ret = energy;
         } else {
             // empty it
-            double ret = currentEnergy;
+            ret = getCurrentEnergy();
             currentEnergy = 0.0;
-            return ret;
         }
+        discharge += ret;
+        return ret;
     }
 
     /**
@@ -69,27 +95,73 @@ public class EnergyStore {
      * @return
      */
     public double getEnergy() {
-        return currentEnergy;
-    }
-
-    public double getMax() {
-        return max;
-    }
-
-    public Double[] log() {
-        return log.toArray(new Double[0]);
-    }
-
-    void reset() {
-        currentEnergy = 0.0;
-        max = 0.0;
+        return getCurrentEnergy();
     }
 
     /**
-     * @return the capacity
+     * Resets charge and discharge log. Does NOT affect energy.
      */
-    public double getCapacity() {
-        return capacity;
+    void resetLog() {
+        charge = 0.0;
+        discharge = 0.0;
     }
 
+    /**
+     * Capacity from max discharge to max fill.
+     *
+     * @return Wh
+     */
+    public double getEffectiveCapacity() {
+        return getActualCapacity();
+    }
+
+    /**
+     * Rated (not useable) capacity
+     *
+     * @return Wh
+     */
+    public double getNominalCapacity() {
+        return getActualCapacity();
+    }
+
+    public String name() {
+        return name;
+    }
+
+    /**
+     * @return the actualCapacity Wh
+     */
+    public double getActualCapacity() {
+        return actualCapacity;
+    }
+
+    /**
+     * @return the currentEnergy Wh
+     */
+    public double getCurrentEnergy() {
+        return currentEnergy;
+    }
+
+    /**
+     * @return the total charge since logging started
+     */
+    public double getCharge() {
+        return charge;
+    }
+
+    /**
+     * @return the discharge since logging started
+     */
+    public double getDischarge() {
+        return discharge;
+    }
+
+    /**
+     * State of charge (another view of current energy)
+     * @return 0.0-1.0
+     */
+    public double getSoc() {
+        return currentEnergy/nominalCapacity;
+    }
 }
+
