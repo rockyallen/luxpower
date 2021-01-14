@@ -38,6 +38,9 @@ public class SolarArray {
         this.azimuth = azimuth;
         this.efficiency = efficiency;
         this.power = area * efficiency * 1000.0;
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
     }
 
     @Override

@@ -23,17 +23,17 @@ public class SystemData {
 
     // LUX Power inverter
     // Efficiency from manual
-    public static final Inverter LuxPower = Inverter.valueOf("LUX Power", 3600, 0.96);
+    public static final Inverter LuxPower = Inverter.valueOf("LUX Power", "", 3600, 0.96);
 
     // LUX Power inverter-the one I should have been given
     // Efficiency from manual
-    public static final Inverter LuxPower5 = Inverter.valueOf("LUX Power 5", 5000, 0.96);
+    public static final Inverter LuxPower5 = Inverter.valueOf("LUX Power 5", "", 5000, 0.96);
 
     // Sunny Boy 1700
-    public static final Inverter SunnyBoy = Inverter.valueOf("Sunny Boy 1700", 1550, 0.92);
+    public static final Inverter SunnyBoy = Inverter.valueOf("Sunny Boy 1700", "", 1550, 0.92);
 
     // Perfect inverter for comparison
-    public static final Inverter perfectInverter = Inverter.valueOf("Perfect", 100000, 1.0);
+    public static final Inverter perfectInverter = Inverter.valueOf("Perfect", "", 100000, 1.0);
 
     // Total 9 kWh per day, guessed profile per hour in kW
     public static final double[] HOURLY_CONSUMPTION = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1.0, 2.8, 1.0, 0.2, 0.2, 0.2};
@@ -71,7 +71,7 @@ public class SystemData {
      */
     public static final double EXPORT_RATE = 0.055;
 
-    public static final EnergyStore battery = new EnergyStore("Battery", "3 of PylonTech 2000 2.4 kW", NBATTERIES * BATTERY_CAPACITY, BATTERY_DOD * NBATTERIES * BATTERY_CAPACITY, 0.90);
+    public static final EnergyStore battery = new EnergyStore("Battery", "3 of PylonTech 2000 2.4 kW", NBATTERIES * BATTERY_CAPACITY, BATTERY_DOD * NBATTERIES * BATTERY_CAPACITY, 0.90, 1000,1000);
 
     private SystemData() {
     }

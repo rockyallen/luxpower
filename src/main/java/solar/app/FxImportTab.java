@@ -12,6 +12,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextArea;
@@ -22,11 +24,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import solar.model.DataStoreXls;
 import solar.model.Changeable;
-import solar.model.DataStoreCache;
+import solar.model.Components;
 import solar.model.DataStoreCacheReader;
 import solar.model.DataStoreCacheWriter;
 import solar.model.Listener;
 import solar.model.DataStoreModel;
+import solar.model.Inverter;
 import solar.model.Record;
 
 /**
@@ -35,6 +38,7 @@ import solar.model.Record;
  */
 public class FxImportTab extends BorderPane implements Changeable {
 
+    private final Button components = new Button("Components");
     private final Button reload = new Button("Import");
     private final Button cache = new Button("Cache");
     private final Button analyse = new Button("Analyse");
@@ -42,7 +46,13 @@ public class FxImportTab extends BorderPane implements Changeable {
     private final TextArea t = new TextArea("");
     private final CheckBox weatherBox = new CheckBox("Include weather (model only)");
     private final CheckBox fudgeBox = new CheckBox("Estimate pv3 (Import only)");
-    private Set<Listener> listeners = new HashSet<>();
+    private final Set<Listener> listeners = new HashSet<>();
+    private final Components componentsList = new Components();
+    private final ComboBox battery = new ComboBox();
+    private final ComboBox inverter = new ComboBox();
+    private final ComboBox pv1 = new ComboBox();
+    private final ComboBox pv2 = new ComboBox();
+    private final ComboBox pv3 = new ComboBox();
     private Collection<Record> records;
 
     @Override
@@ -62,7 +72,33 @@ public class FxImportTab extends BorderPane implements Changeable {
             @Override
             public void handle(ActionEvent value) {
                 DataStoreModel dsc = new DataStoreModel<Collection<Record>>();
-            dsc.setWeather(weatherBox.isSelected());
+                dsc.setWeather(weatherBox.isSelected());
+
+                String sel = (String) pv1.getValue();
+                if (sel != null) {
+                    dsc.setPv1(componentsList.getArrays().get(sel));
+                }
+                sel = (String) pv2.getValue();
+                if (sel != null) {
+                    dsc.setPv2(componentsList.getArrays().get(sel));
+                }
+                sel = (String) pv3.getValue();
+                if (sel != null) {
+                    dsc.setPv3(componentsList.getArrays().get(sel));
+                }
+                sel = (String) inverter.getValue();
+                if (sel != null) {
+                    dsc.setInv12(componentsList.getInverters().get(sel));
+                }
+                sel = (String) battery.getValue();
+                if (sel != null) {
+                    dsc.setBattery(componentsList.getBatteries().get(sel));
+                }
+//      pv1.valueProperty().addListener(new ChangeListener<String>() {
+//            @Override public void changed(ObservableValue ov, String t, String t1) {                
+//                ppv1;                
+//            }    
+//        });                
                 dsc.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     @Override
                     public void handle(WorkerStateEvent ev) {
@@ -100,7 +136,7 @@ public class FxImportTab extends BorderPane implements Changeable {
                         t.appendText("Loaded successfully " + dsc.toString() + "\n");
                         records = (Collection<Record>) dsc.getValue();
                         t.appendText("Number of records=" + records.size() + "\n");
-                        
+
                         analyse.setDisable(false);
                     }
                 });
@@ -138,7 +174,7 @@ public class FxImportTab extends BorderPane implements Changeable {
                         t.appendText("Caching records");
                         DataStoreCacheWriter dsw = new DataStoreCacheWriter();
                         dsw.setData(records);
-                        Executors.newSingleThreadExecutor().submit(dsw);                        
+                        Executors.newSingleThreadExecutor().submit(dsw);
                     }
                 });
                 dsx.setOnFailed(new EventHandler<WorkerStateEvent>() {
@@ -166,17 +202,53 @@ public class FxImportTab extends BorderPane implements Changeable {
             }
         });
 
+        components.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent value) {
+                componentsList.load(new File("components.xls"));
+                //System.out.println(componentsList);                
+                inverter.getItems().addAll(componentsList.getInverters().keySet());
+                battery.getItems().addAll(componentsList.getBatteries().keySet());
+                pv1.getItems().addAll(componentsList.getArrays().keySet());
+                pv2.getItems().addAll(componentsList.getArrays().keySet());
+                pv3.getItems().addAll(componentsList.getArrays().keySet());
+            }
+        });
+
         analyse.setOnAction(value -> {
             announceChanged();
             analyse.setDisable(true);
         });
 
+        analyse.setDisable(true);
+
+        VBox vb = new VBox();
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        analyse.setDisable(true);
-        p.getChildren().addAll(reload, fudgeBox, cache, model, weatherBox, analyse);
-        setTop(p);
+        p.getChildren().addAll(reload, fudgeBox);
+        vb.getChildren().add(p);
+        p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(cache);
+        vb.getChildren().add(p);
+        p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(model, weatherBox, components,
+                new Label("PV1"), pv1,
+                new Label("PV2"), pv2,
+                new Label("PV3"), pv3,
+                new Label("Inverter"), inverter,
+                new Label("Battery"), battery);
+        vb.getChildren().add(p);
+        p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(analyse);
+        vb.getChildren().add(p);
+        setTop(vb);
 
         ScrollPane sp = new ScrollPane();
         sp.setHbarPolicy(ScrollBarPolicy.NEVER);

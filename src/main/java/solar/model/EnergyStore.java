@@ -1,11 +1,10 @@
 package solar.model;
 
 /**
- * A battery.
- * Efficiency is charging efficiency, discharge efficiency is 100%.
- * 
+ * A battery. Efficiency is charging efficiency, discharge efficiency is 100%.
+ *
  * Charge and discharge currents are not limited.
- * 
+ *
  * @author rocky
  */
 public class EnergyStore {
@@ -14,6 +13,8 @@ public class EnergyStore {
     private final double actualCapacity;
     private final double nominalCapacity;
     private final double efficiency;
+    private final double pChargeMax;
+    private final double pDischargeMax;
 
     private double currentEnergy = 0.0;
     private double charge = 0.0;
@@ -26,23 +27,32 @@ public class EnergyStore {
      * @param description Full description
      * @param nominalCapacity Nominal battery capacity Wh
      * @param effectiveCapacity Wh Useful battery capacity
+     * @param efficiency Round trip efficiency
+     * @param pChargeMax Maximum charge power, W
+     * @param pDischargeMax Maximum discharge power, W
      */
-    public EnergyStore(String name, String description, double nominalCapacity, double effectiveCapacity, double efficiency) {
+    public EnergyStore(String name, String description, double nominalCapacity, double effectiveCapacity, double efficiency, double pChargeMax, double pDischargeMax) {
         this.name = name;
         this.nominalCapacity = nominalCapacity;
         this.actualCapacity = effectiveCapacity;
         this.efficiency = efficiency;
+        this.pChargeMax = pChargeMax;
+        this.pDischargeMax = pDischargeMax;
+
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
         if (effectiveCapacity > nominalCapacity) {
-            throw new IllegalArgumentException("effective capacity must be less than nominal");
+            throw new IllegalArgumentException("effective capacity must be less than nominal (" + effectiveCapacity + "," + nominalCapacity + ")");
         }
         if (effectiveCapacity < 0.0) {
-            throw new IllegalArgumentException("effective capacity must be greater than or equal to 0");
+            throw new IllegalArgumentException("effective capacity must be greater than or equal to 0 (" + effectiveCapacity + ")");
         }
         if (efficiency < 0.1) {
-            throw new IllegalArgumentException("efficiency must be greater than or equal to 0.1");
+            throw new IllegalArgumentException("efficiency must be greater than or equal to 0.1 (" + efficiency + ")");
         }
         if (efficiency > 1.0) {
-            throw new IllegalArgumentException("efficiency must be less than or equal to 1.0");
+            throw new IllegalArgumentException("efficiency must be less than or equal to 1.0 (" + efficiency + ")");
         }
     }
 
@@ -54,14 +64,14 @@ public class EnergyStore {
      */
     public double store(double energy) {
         double ret = 0.0;
-        double toFill = (getEffectiveCapacity() - getCurrentEnergy())/efficiency;
+        double toFill = (getEffectiveCapacity() - getCurrentEnergy()) / efficiency;
         if (toFill < energy) {
             // top it up
             currentEnergy = getEffectiveCapacity();
             ret = toFill;
         } else {
             // store it all
-            currentEnergy += energy*efficiency;
+            currentEnergy += energy * efficiency;
             ret = energy;
         }
         charge += ret;
@@ -158,10 +168,10 @@ public class EnergyStore {
 
     /**
      * State of charge (another view of current energy)
+     *
      * @return 0.0-1.0
      */
     public double getSoc() {
-        return currentEnergy/nominalCapacity;
+        return currentEnergy / nominalCapacity;
     }
 }
-

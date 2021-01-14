@@ -37,7 +37,7 @@ public class EnergyStoreTest {
      */
     @Test
     public void testStore() {
-        EnergyStore instance = new EnergyStore("", "", 10, 10, 1);
+        EnergyStore instance = new EnergyStore("", "", 10, 10, 1, 1000, 1000);
         assertEquals(instance.getEnergy(), 0.0, 0.0001);
 
         double energy = 7.0;
@@ -57,7 +57,7 @@ public class EnergyStoreTest {
      */
     @Test
     public void testDemandAndLog() {
-        EnergyStore instance = new EnergyStore("", "", 10, 10, 1);
+        EnergyStore instance = new EnergyStore("", "", 10, 10, 1, 1000, 1000);
 
         instance.store(8.0);
 
@@ -77,7 +77,7 @@ public class EnergyStoreTest {
 
     @Test
     public void testEfficiency() {
-        EnergyStore instance = new EnergyStore("", "", 10, 10, 0.9);
+        EnergyStore instance = new EnergyStore("", "", 10, 10, 0.9, 1000, 1000);
 
         instance.store(9.0);
 
@@ -162,17 +162,6 @@ public class EnergyStoreTest {
 //        EnergyStore instance = null;
 //        double expResult = 0.0;
 //        double result = instance.getCurrentEnergy();
-    }
-
-    /**
-     * Test of getCharge method, of class EnergyStore.
-     */
-    @Test
-    public void testGetCharge() {
-//        System.out.println("getCharge");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getCharge();
     }
 
     /**

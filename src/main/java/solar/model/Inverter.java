@@ -16,6 +16,7 @@ public class Inverter {
     public final String name;
 
     public static final double GRID_VOLTAGE = 240.0;
+
     /**
      *
      * @param name
@@ -23,11 +24,14 @@ public class Inverter {
      * @param parasiticPowerLoss Watts
      * @param resistance Ohms (assumes 240V output)
      */
-    public Inverter(String name, double powerLimit, double parasiticPowerLoss, double resistance) {
+    public Inverter(String name, String description, double powerLimit, double parasiticPowerLoss, double resistance) {
         this.name = name;
         this.inverterExportLimit = powerLimit;
         this.parasiticPower = parasiticPowerLoss;
         this.resistance = resistance;
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
     }
 
     /**
@@ -36,23 +40,23 @@ public class Inverter {
      *
      * @param name Description
      * @param powerLimit Rated power output
-     * @param halfLoadEfficiency Efficiency at half maximum output. 
-     * Usually near maximum and the same as the 'european' efficiency.
+     * @param halfLoadEfficiency Efficiency at half maximum output. Usually near
+     * maximum and the same as the 'european' efficiency.
      * @return new Inverter
      */
-    public static Inverter valueOf(String name, double powerLimit, double halfLoadEfficiency) {
+    public static Inverter valueOf(String name, String description, double powerLimit, double halfLoadEfficiency) {
         double halfLoadPowerLoss = 0.5 * (1 - halfLoadEfficiency) * powerLimit;
         double parasiticpower = halfLoadPowerLoss / 2.0;
 
         double resistanceLoss = halfLoadPowerLoss - parasiticpower;
         double IHalfLoad = (0.5 * powerLimit) / GRID_VOLTAGE;
         double resistance = resistanceLoss / (IHalfLoad * IHalfLoad);
-        return new Inverter(name, powerLimit, parasiticpower, resistance);
+        return new Inverter(name, description, powerLimit, parasiticpower, resistance);
     }
 
     /**
      * Output power for a given input
-     * 
+     *
      * @param pin Input power, Watts
      * @return Output power, Watts
      */

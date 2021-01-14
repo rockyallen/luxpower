@@ -13,6 +13,12 @@ public class DataStoreModel<T> extends Task {
 
     // Include the effect of weather?
     private boolean weather = true;
+        private EnergyStore battery = SystemData.battery;
+        private SolarArray pv1 = SystemData.west;
+        private SolarArray pv2 = SystemData.east;
+        private SolarArray pv3 = SystemData.garage;
+        private Inverter inv12 = SystemData.LuxPower;
+        private Inverter inv3 = SystemData.SunnyBoy;
 
     /**
      * Run simulation and convert the outputs into log records as if they had
@@ -31,12 +37,6 @@ public class DataStoreModel<T> extends Task {
         int dday = 0;
 
         // Asemble components
-        EnergyStore battery = SystemData.battery;
-        SolarArray pv1 = SystemData.west;
-        SolarArray pv2 = SystemData.east;
-        SolarArray pv3 = SystemData.garage;
-        Inverter inv12 = SystemData.LuxPower;
-        Inverter inv3 = SystemData.SunnyBoy;
 
         for (int month = 0; month < 12; month++) {
             for (int date = 0; date < Calculator.daysPerMonth[month]; date++) {
@@ -169,6 +169,49 @@ public class DataStoreModel<T> extends Task {
     @Override
     public String toString() {
         return "Modelled. Weather " + (weather ? "" : "not") + " included.";
+    }
+
+    /**
+     * @param battery the battery to set
+     */
+    public void setBattery(EnergyStore battery) {
+        this.battery = battery;
+    }
+
+    /**
+     * @param pv1 the pv1 to set
+     */
+    public void setPv1(SolarArray pv1) {
+        //System.out.println("setting "+pv1);
+        this.pv1 = pv1;
+    }
+
+    /**
+     * @param pv2 the pv2 to set
+     */
+    public void setPv2(SolarArray pv2) {
+        this.pv2 = pv2;
+    }
+
+    /**
+     * @param pv3 the pv3 to set
+     */
+    public void setPv3(SolarArray pv3) {
+        this.pv3 = pv3;
+    }
+
+    /**
+     * @param inv12 the inv12 to set
+     */
+    public void setInv12(Inverter inv12) {
+        this.inv12 = inv12;
+    }
+
+    /**
+     * @param inv3 the inv3 to set
+     */
+    public void setInv3(Inverter inv3) {
+        this.inv3 = inv3;
     }
 
 }
