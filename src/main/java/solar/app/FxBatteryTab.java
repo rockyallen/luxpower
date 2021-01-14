@@ -10,6 +10,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -17,7 +18,6 @@ import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
 import solar.model.Listener;
 import solar.model.Period;
-import solar.model.DataStore;
 import solar.model.Record;
 import solar.model.RecordFilter;
 import solar.model.SystemData;
@@ -103,25 +103,22 @@ public class FxBatteryTab extends BorderPane implements Listener {
     private void analyse() {
         totalDischarge.clear();
         totalCharge.clear();
-//            System.out.println("gr="+ds.getDataStore.Records().size());
         List<Record> endOfDays = new RecordFilter<Record>(records).endOfPeriod(Period.DAY).result();
-//            System.out.println(endOfDays.size());
         for (Record e : endOfDays) {
-            //          System.out.println(e);
-            totalCharge.add(new DatedValue(e.getDate(), e.geteChgDay()));
-            totalDischarge.add(new DatedValue(e.getDate(), e.geteDisChgDay()));
+            totalCharge.add(new DatedValue(e.getDate(), e.geteChgDay())); // Wh
+            totalDischarge.add(new DatedValue(e.getDate(), e.geteDisChgDay())); // Wh
         }
 
-        double capacity = SystemData.battery.getActualCapacity();
-        double chg = new DatedValueFilter(totalCharge).total();
-        double dis = new DatedValueFilter(totalDischarge).total();
-        nominalCapacityBox.setText(String.format("%3.1f kWh", capacity));
-        chargeBox.setText(String.format("%3.1f kWh", chg));
-        dischargeBox.setText(String.format("%3.1f kWh", dis));
+        double capacity = SystemData.battery.getNominalCapacity(); // Wh
+        double chg = new DatedValueFilter(totalCharge).total(); // kWh
+        double dis = new DatedValueFilter(totalDischarge).total(); // kWh
+        nominalCapacityBox.setText(String.format("%3.1f kWh", capacity/1000));
+        chargeBox.setText(String.format("%3.1f kWh", chg)); // kWh
+        dischargeBox.setText(String.format("%3.1f kWh", dis)); // kWh
         if (records.size() > 0) {
-            double mean = dis / totalDischarge.size();
+            double mean = (dis / totalDischarge.size()); // kWh
             dailyBox.setText(String.format("%3.1f kWh", mean));
-            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / capacity));
+            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / (capacity/1000)));
             efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
         }
     }

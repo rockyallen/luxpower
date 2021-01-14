@@ -50,6 +50,8 @@ public class FxAnalysisTab extends BorderPane implements Listener {
     private final List<DatedValue> totalExport = new ArrayList<>();
     private final List<DatedValue> totalConsumption = new ArrayList<>();
     private final List<DatedValue> totalSelfUse = new ArrayList<>();
+    private final List<DatedValue> totalDischarge = new ArrayList<>();
+    private final List<DatedValue> totalCharge = new ArrayList<>();
 
     // Collectors used to transfer data from the simulation ot the chart
     private final XYChart.Series tracePv1 = new XYChart.Series();
@@ -140,6 +142,10 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         List<Record> endOfDays = new RecordFilter<>(records).endOfPeriod(Period.DAY).result();
         //System.out.println("end of day="+endOfDays.size());
         for (Record r : endOfDays) {
+            
+            totalCharge.add(new DatedValue(r.getDate(), r.geteChgDay()));
+            totalDischarge.add(new DatedValue(r.getDate(), r.geteDisChgDay()));
+
             totalPv1.add(new DatedValue(r.getDate(), r.getePv1Day()));
             totalPv2.add(new DatedValue(r.getDate(), r.getePv2Day()));
             totalPv3.add(new DatedValue(r.getDate(), r.getePv3Day()));
@@ -169,7 +175,7 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         selfUseRatioBox.setText(String.format("%3.1f%%", 100 * totalSelfUseTotal / totalGenTotal));
         capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGenTotal / ratedCapacity));
 
-        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption);
+        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
     }
 
     private void plot() {

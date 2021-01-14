@@ -39,7 +39,7 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
         this.description = description;
     }
 
-    void populate(List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalGen, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption) {
+    void populate(List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalGen, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption, List<DatedValue> totalCharge, List<DatedValue> totalDischarge) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -58,10 +58,10 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
 
         for (int month = 0; month < 12; month++) {
             sb.append(String.format("|%s\n", f.format(new Date(100, month, 1))));
-            doRow(sb, month, Period.MONTH, pv2, pv1, pv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption);
+            doRow(sb, month, Period.MONTH, pv2, pv1, pv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
         }
         sb.append("|Year\n");
-        doRow(sb, 1, Period.ALL, pv1, pv2, pv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption);
+        doRow(sb, 1, Period.ALL, pv1, pv2, pv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
 
         sb.append("|===\n");
 
@@ -74,10 +74,10 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
         setText(html);
     }
 
-    private void doRow(StringBuilder sb, int month, Period period, List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalGen, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption) {
+    private void doRow(StringBuilder sb, int month, Period period, List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalGen, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption, List<DatedValue> totalCharge, List<DatedValue> totalDischarge) {
         {
-        final double ratedPower = (SystemData.garage.power + SystemData.east.power + SystemData.west.power) / 1000.0; // kW
-        final double ratedCapacity = ratedPower * 365 * 24; // kW
+            final double ratedPower = (SystemData.garage.power + SystemData.east.power + SystemData.west.power) / 1000.0; // kW
+            final double ratedCapacity = ratedPower * 365 * 24; // kW
             DatedValueFilter filter = new DatedValueFilter(totalGen);
             filter.period(month, period);
             int records = filter.size();
