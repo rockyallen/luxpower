@@ -17,7 +17,11 @@ public class FxMainAnalysis extends Application {
 
     public FxMainAnalysis() {
         super();
-   }
+    }
+
+    @Override
+    public void init() {
+    }
 
     @Override
     public void start(Stage stage) {
@@ -28,11 +32,11 @@ public class FxMainAnalysis extends Application {
         FxAnalysisDailyTab power = new FxAnalysisDailyTab();
         FxAnalysisTab energy = new FxAnalysisTab(summary);
         FxBatteryTab battery = new FxBatteryTab();
-        
+
         importTab.addListener(power);
         importTab.addListener(energy);
         importTab.addListener(battery);
-        
+
         tabPane.getTabs().add(tab("Introduction", new FxIntroTab(), "User guide"));
         tabPane.getTabs().add(tab("Source", importTab, "Reload data"));
         tabPane.getTabs().add(tab("Power", power, "Logged data throughout the day averaged over a month"));
@@ -40,14 +44,12 @@ public class FxMainAnalysis extends Application {
         tabPane.getTabs().add(tab("Battery", battery, "Variation in battery usage during the year"));
         tabPane.getTabs().add(tab("Summary", summary, "Tabulated monthly results"));
         //tabPane.getTabs().add(tab("Inverters (M)", new FxInverterTab(), "Variation of predicted maximum (full sun) power output during the day"));
-        //tabPane.getTabs().add(tab("Power (M)", new FxDailyModelTab(), "Variation of predicted maximum (full sun) energy output during the year"));
-        //tabPane.getTabs().add(tab("Enery (M)", new FxAnnualModelTab(), "Inverter efficiency, 2 parameter model"));
 
         VBox vBox = new VBox(tabPane);
         vBox.setPrefSize(1500, 1000);
         Scene scene = new Scene(vBox);
         stage.setScene(scene);
-        stage.setTitle("Solar PV analysis tool");
+        stage.setTitle("Solar PV Analysis Tool");
 
         stage.show();
     }
