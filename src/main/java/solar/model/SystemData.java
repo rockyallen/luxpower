@@ -1,5 +1,7 @@
 package solar.model;
 
+import java.util.List;
+
 /**
  *
  * @author rocky
@@ -72,6 +74,14 @@ public class SystemData {
     public static final double EXPORT_RATE = 0.055;
 
     public static final EnergyStore battery = new EnergyStore("Battery", "3 of PylonTech 2000 2.4 kW", NBATTERIES * BATTERY_CAPACITY, BATTERY_DOD * NBATTERIES * BATTERY_CAPACITY, 0.90, 1000,1000);
+    /**
+     * £/day
+     */
+    public static double STANDING_CHARGE=0.20;
+    /**
+     * £/kWh
+     */
+    public static double FITS_RATE = 0.55;
 
     private SystemData() {
     }

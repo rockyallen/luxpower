@@ -94,9 +94,9 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
         traceImported.setName("Imported");
         traceExported.setName("Exported");
         traceSelfUse.setName("Self Use");
-        tracePv1.setName(SystemData.west.name);
-        tracePv2.setName(SystemData.east.name);
-        tracePv3.setName(SystemData.garage.name);
+        tracePv1.setName("pv1:" + SystemData.west.name);
+        tracePv2.setName("pv2:" + SystemData.east.name);
+        tracePv3.setName("pv3:" + SystemData.garage.name);
         sc.setCreateSymbols(false);
         sc.getData().addAll(traceGeneration);
 
@@ -115,7 +115,7 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
 
     private void analyse() {
 
-         Collection<Record> thisMonthRecords = new RecordFilter<Record>(records).period(monthControl.getMonth(), Period.MONTH).result();
+        Collection<Record> thisMonthRecords = new RecordFilter<Record>(records).period(monthControl.getMonth(), Period.MONTH).result();
 
         tracePv1.getData().clear();
         tracePv2.getData().clear();
@@ -143,13 +143,13 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
                 totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));
                 totalPv2.add(new DatedValue(r.getDate(), r.getPpv2()));
                 totalPv3.add(new DatedValue(r.getDate(), r.getPpv3()));
-                
+
                 double generated = r.getPinv();
                 double exported = r.getpToGrid();
                 double selfUse = generated - exported;
                 double imported = r.getpToUser();
                 double consumption = imported + selfUse;
-                
+
                 totalGen.add(new DatedValue(r.getDate(), generated));
                 totalSelfUse.add(new DatedValue(r.getDate(), selfUse));
                 totalExport.add(new DatedValue(r.getDate(), exported));
@@ -188,7 +188,7 @@ public class FxAnalysisDailyTab extends BorderPane implements Listener {
             DatedValueFilter filter = new DatedValueFilter(accumulator);
             double mean = filter.total() / points;
             // + 0.5 to plot in the middle of the hour
-            trace.getData().add(new XYChart.Data(hour+0.5, mean * scale));
+            trace.getData().add(new XYChart.Data(hour + 0.5, mean * scale));
         }
     }
 }

@@ -18,6 +18,7 @@ public class Components {
     private final Map<String, Inverter> inverters = new TreeMap<>();
     private final Map<String, EnergyStore> batteries = new TreeMap<>();
     private final Map<String, SolarArray> arrays = new TreeMap<>();
+    private final Map<String, Costs> costs = new TreeMap<>();
 
     public boolean load(File file) {
         try {
@@ -48,7 +49,7 @@ public class Components {
 
             rows = sheet.getPhysicalNumberOfRows();
 
-            if (rows > 1) {
+            if (rows >= 2) {
                 for (int r = 1; r < rows && r < 20; r++) {
                     row = sheet.getRow(r);
                     String name = row.getCell(0).getStringCellValue();
@@ -70,7 +71,7 @@ public class Components {
 
             rows = sheet.getPhysicalNumberOfRows();
 
-            if (rows > 1) {
+            if (rows >= 2) {
                 for (int r = 1; r < rows && r < 20; r++) {
                     row = sheet.getRow(r);
                     String name = row.getCell(0).getStringCellValue();
@@ -84,6 +85,24 @@ public class Components {
                                         row.getCell(4).getNumericCellValue(),
                                         row.getCell(5).getNumericCellValue()
                                 ));
+                    }
+                }
+            }
+            sheet = wb.getSheet("Costs");
+
+            rows = sheet.getPhysicalNumberOfRows();
+
+            if (rows >= 2) {
+                for (int r = 1; r < rows && r < 20; r++) {
+                    row = sheet.getRow(r);
+                    String name = row.getCell(0).getStringCellValue();
+                    if (!"".equals(name)) {
+                        Costs c= new Costs();
+                        c.setStandingCharge(row.getCell(1).getNumericCellValue());
+                        c.setImportPrice(row.getCell(2).getNumericCellValue());
+                        c.setExportPrice(row.getCell(3).getNumericCellValue());
+                        c.setFits(row.getCell(4).getNumericCellValue());
+                    costs.put(name, c);
                     }
                 }
             }
@@ -109,5 +128,12 @@ public class Components {
     @Override
     public String toString() {
         return "Components(" + inverters.size() + "," + batteries.size() + "," + arrays.size() + ")";
+    }
+
+    /**
+     * @return the costs
+     */
+    public Map<String, Costs> getCosts() {
+        return costs;
     }
 }

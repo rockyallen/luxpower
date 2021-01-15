@@ -8,15 +8,12 @@ import solar.model.Listener;
 import java.util.HashMap;
 import java.util.List;
 import org.asciidoctor.Asciidoctor;
+import solar.model.Costs;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
 import solar.model.Period;
-import solar.model.DataStore;
 import solar.model.Record;
 import solar.model.SystemData;
-import static solar.model.SystemData.west;
-import static solar.model.SystemData.east;
-import static solar.model.SystemData.garage;
 
 /**
  *
@@ -26,11 +23,16 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
 
     private Collection<Record> records;
     private String description;
+    private Costs costs = new Costs();
 
     public FxSummaryTab() {
 
         super();
         setText("Run analysis to see this table");
+        costs.setExportPrice(SystemData.EXPORT_RATE);
+        costs.setFits(SystemData.FITS_RATE);
+        costs.setImportPrice(SystemData.IMPORT_RATE);
+        costs.setStandingCharge(SystemData.STANDING_CHARGE);
     }
 
     @Override
@@ -49,10 +51,10 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
         sb.append("[cols=\"^^^^^^^^\", options=\"header\"]\n");
         sb.append("|===\n");
         sb.append("|Month");
-        sb.append("|").append(SystemData.west.name).append(" kWh");
-        sb.append("|").append(SystemData.east.name).append(" kWh");
-        sb.append("|").append(SystemData.garage.name).append(" kWh");
-        sb.append("|Inverter kWh |Import kWh |Export kWh |Consumption kWh | Self-use kWh |Self-use |Capacity Factor\n");
+        sb.append("|").append("PV1 ").append(" kWh");
+        sb.append("|").append("PV2 ").append(" kWh");
+        sb.append("|").append("PV3 ").append(" kWh");
+        sb.append("|Inverter kWh |Import kWh |Export kWh |Consumption kWh | Self-use kWh |Self-use |Capacity Factor|Bill\n");
         sb.append("\n");
         SimpleDateFormat f = new SimpleDateFormat("MMM");
 
@@ -78,6 +80,7 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
         {
             final double ratedPower = (SystemData.garage.power + SystemData.east.power + SystemData.west.power) / 1000.0; // kW
             final double ratedCapacity = ratedPower * 365 * 24; // kW
+
             DatedValueFilter filter = new DatedValueFilter(totalGen);
             filter.period(month, period);
             int records = filter.size();
@@ -89,41 +92,68 @@ public class FxSummaryTab extends FxHtmlTab implements Listener {
 
                 filter = new DatedValueFilter(pv1);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double epv1 = filter.total();
+                sb.append(String.format("|%3s\n", df.format(epv1)));
 
                 filter = new DatedValueFilter(pv2);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double epv2 = filter.total();
+                sb.append(String.format("|%3s\n", df.format(epv2)));
 
                 filter = new DatedValueFilter(pv3);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double epv3 = filter.total();
+                sb.append(String.format("|%3s\n", df.format(epv3)));
 
                 sb.append(String.format("|%3s\n", df.format(totalGenTotal)));
 
                 filter = new DatedValueFilter(totalImport);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double eImport = filter.total();
+                sb.append(String.format("|%3s\n", df.format(eImport)));
 
                 filter = new DatedValueFilter(totalExport);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double eExport = filter.total();
+                sb.append(String.format("|%3s\n", df.format(eExport)));
 
                 filter = new DatedValueFilter(totalConsumption);
                 filter.period(month, period);
-                sb.append(String.format("|%3s\n", df.format(filter.total())));
+                double eConsumption = filter.total();
+                sb.append(String.format("|%3s\n", df.format(eConsumption)));
 
                 filter = new DatedValueFilter(totalSelfUse);
                 filter.period(month, period);
-                double totalSelfUseTotal = filter.total();
-                sb.append(String.format("|%3s\n", df.format(totalSelfUseTotal)));
+                double eSelfUse = filter.total();
+                sb.append(String.format("|%3s\n", df.format(eSelfUse)));
 
-                sb.append(String.format("|%3.1f%%\n", 100 * totalSelfUseTotal / totalGenTotal));
+                sb.append(String.format("|%3.1f%%\n", 100 * eSelfUse / totalGenTotal));
 
                 sb.append(String.format("|%3.1f%%\n", 100 * totalGenTotal / ratedCapacity));
+
+                double bill
+                        = SystemData.STANDING_CHARGE * period.days()
+                        + SystemData.IMPORT_RATE * eImport
+                        - epv3 * SystemData.FITS_RATE
+                        - SystemData.EXPORT_RATE * eExport;
+                sb.append(String.format("|£%3.2f\n", bill));
             } else {
-                sb.append("|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n");
+                sb.append("|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n|-\n");
             }
         }
+    }
+
+    /**
+     * @return the costs
+     */
+    public Costs getCosts() {
+        return costs;
+    }
+
+    /**
+     * @param costs the costs to set
+     */
+    public void setCosts(Costs costs) {
+        this.costs = costs;
     }
 }

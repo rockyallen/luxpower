@@ -8,25 +8,36 @@ public enum Period {
     /**
      * Day number 0-364.
      */
-    DAY, 
+    DAY(1), 
     /**
      * Day in month number 1-31. Why not 0 based?
      */
-    DATE, 
+    DATE(0), 
     /**
      * Week number 0-51.
      */
-    WEEK, 
+    WEEK(7), 
     /**
      * Month number 0-11.
      */
-     MONTH, 
+     MONTH(30), 
      /**
       * Hour number 0-23.
       */
-     HOUR, 
+     HOUR(0), 
      /**
       * All records?.
       */
-     ALL //, YEAR  
+     ALL(365); //, YEAR  
+
+     /**
+      * HACK - delete me
+      * @return 
+      */
+    public double days() {
+        return days;
+    }
+    final int days;
+    
+    Period(int days){this.days = days;}
 }

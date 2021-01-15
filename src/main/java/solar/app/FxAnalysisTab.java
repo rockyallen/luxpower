@@ -92,9 +92,9 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         sc.setPrefSize(10000, 10000);
         xAxis.setLabel("Day");
         yAxis.setLabel("kWh");
-        tracePv1.setName(SystemData.west.name);
-        tracePv2.setName(SystemData.east.name);
-        tracePv3.setName(SystemData.garage.name);
+        tracePv1.setName("pv1");
+        tracePv2.setName("pv2");
+        tracePv3.setName("pv3");
         traceGeneration.setName("Generation");
         traceConsumption.setName("Consumption");
         traceImported.setName("Imported");
