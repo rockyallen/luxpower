@@ -31,17 +31,14 @@ public class FxMainAnalysis extends Application {
         FxSummaryTab summary = new FxSummaryTab();
         FxAnalysisDailyTab power = new FxAnalysisDailyTab();
         FxAnalysisTab energy = new FxAnalysisTab(summary);
-        FxBatteryTab battery = new FxBatteryTab();
 
         importTab.addListener(power);
         importTab.addListener(energy);
-        importTab.addListener(battery);
 
         tabPane.getTabs().add(tab("Introduction", new FxIntroTab(), "User guide"));
         tabPane.getTabs().add(tab("Source", importTab, "Reload data"));
         tabPane.getTabs().add(tab("Power", power, "Logged data throughout the day averaged over a month"));
         tabPane.getTabs().add(tab("Energy", energy, "Logged data throughout the year"));
-        tabPane.getTabs().add(tab("Battery", battery, "Variation in battery usage during the year"));
         tabPane.getTabs().add(tab("Summary", summary, "Tabulated monthly results"));
         //tabPane.getTabs().add(tab("Inverters (M)", new FxInverterTab(), "Variation of predicted maximum (full sun) power output during the day"));
 

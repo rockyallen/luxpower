@@ -39,20 +39,21 @@ public class FxImportTab extends BorderPane implements Changeable {
 
     private final Button components = new Button("Components");
     private final Button reload = new Button("Import");
-    private final Button cache = new Button("Cache");
+    //private final Button cache = new Button("Cache");
     //private final Button analyse = new Button("Analyse");
-    private final Button model = new Button("Model");
+    private final Button model = new Button("Go");
     private final TextArea t = new TextArea("");
     private final CheckBox weatherBox = new CheckBox("Weather");
     private final CheckBox fudgeBox = new CheckBox("Estimate PV3");
     private final Set<Listener> listeners = new HashSet<>();
-    private final Components componentsList = new Components();
     private final ComboBox battery = new ComboBox();
     private final ComboBox inverter = new ComboBox();
     private final ComboBox pv1 = new ComboBox();
     private final ComboBox pv2 = new ComboBox();
     private final ComboBox pv3 = new ComboBox();
     private final ComboBox cost = new ComboBox();
+
+    private final Components componentsList = new Components();
     private Collection<Record> records;
 
     @Override
@@ -74,165 +75,27 @@ public class FxImportTab extends BorderPane implements Changeable {
         model.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
-                DataStoreModel dsm = new DataStoreModel<Collection<Record>>();
-                dsm.setWeather(weatherBox.isSelected());
-
-                String sel = (String) pv1.getValue();
-                if (sel != null) {
-                    dsm.setPv1(componentsList.getArrays().get(sel));
-                }
-                sel = (String) pv2.getValue();
-                if (sel != null) {
-                    dsm.setPv2(componentsList.getArrays().get(sel));
-                }
-                sel = (String) pv3.getValue();
-                if (sel != null) {
-                    dsm.setPv3(componentsList.getArrays().get(sel));
-                }
-                sel = (String) inverter.getValue();
-                if (sel != null) {
-                    dsm.setInv12(componentsList.getInverters().get(sel));
-                }
-                sel = (String) battery.getValue();
-                if (sel != null) {
-                    dsm.setBattery(componentsList.getBatteries().get(sel));
-                }
-                sel = (String) cost.getValue();
-                if (sel != null) {
-                    //dsc.setBattery(componentsList.getBatteries().get(sel));
-                }
-//      pv1.valueProperty().addListener(new ChangeListener<String>() {
-//            @Override public void changed(ObservableValue ov, String t, String t1) {                
-//                ppv1;                
-//            }    
-//        });                
-                dsm.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Modelled successfully " + dsm.toString() + "\n");
-                        records = (Collection<Record>) dsm.getValue();
-                        t.appendText("Number of records=" + records.size() + "\n");
-                        announceChanged();
-//                        analyse.setDisable(false);
-                    }
-                });
-                dsm.setOnFailed(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Model FAILED " + dsm.toString() + "\n");
-                    }
-                });
-                dsm.messageProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue o, Object oldVal,
-                            Object newVal) {
-                        t.appendText(newVal.toString() + "\n");
-                    }
-                });
-
-                Executors.newSingleThreadExecutor().submit(dsm);
+                loadModel();
             }
         });
 
-        cache.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent value) {
-                DataStoreCacheReader dsc = new DataStoreCacheReader<Collection<Record>>();
-                dsc.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Loaded successfully " + dsc.toString() + "\n");
-                        records = (Collection<Record>) dsc.getValue();
-                        t.appendText("Number of records=" + records.size() + "\n");
-                        announceChanged();
-                        //                      analyse.setDisable(false);
-                    }
-                });
-                dsc.setOnFailed(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Failed to load cache " + dsc.toString() + "\n");
-                    }
-                });
-                dsc.messageProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue o, Object oldVal,
-                            Object newVal) {
-                        t.appendText(newVal.toString() + "\n");
-                    }
-                });
-
-                Executors.newSingleThreadExecutor().submit(dsc);
-            }
-        });
-
+//        cache.setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent value) {
+//                loadCache();
+//            }
+//        });
         reload.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
-                DataStoreXls dsx = new DataStoreXls<Collection<Record>>();
-                dsx.setFudge(fudgeBox.isSelected());
-                dsx.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Loaded successfully " + dsx.toString() + "\n");
-                        records = (Collection<Record>) dsx.getValue();
-                        t.appendText("Number of records=" + records.size() + "\n");
-                        //                    analyse.setDisable(false);
-
-                        t.appendText("Caching records...\n");
-                        DataStoreCacheWriter dsw = new DataStoreCacheWriter();
-                        dsw.setData(records);
-                        Executors.newSingleThreadExecutor().submit(dsw);
-                        announceChanged();
-                    }
-                });
-                dsx.setOnFailed(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent ev) {
-                        t.appendText("Failed " + dsx.toString() + "\n");
-                    }
-                });
-                dsx.messageProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue o, Object oldVal,
-                            Object newVal) {
-                        t.appendText(newVal.toString() + "\n");
-                    }
-                });
-
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setInitialDirectory(dsx.getFolder());
-
-                File from = directoryChooser.showDialog(null);
-                if (from != null) {
-                    dsx.setFolder(from);
-                    Executors.newSingleThreadExecutor().submit(dsx);
-                }
+                loadLogs();
             }
         });
 
         components.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
-                t.appendText("Loading components.xls\n");
-                if (componentsList.load(new File("components.xls"))) {
-                    t.appendText("Loaded successfully\n");
-                    t.appendText(componentsList.toString());
-                    inverter.getItems().clear();
-                    inverter.getItems().addAll(componentsList.getInverters().keySet());
-                    battery.getItems().clear();
-                    battery.getItems().addAll(componentsList.getBatteries().keySet());
-                    pv1.getItems().clear();
-                    pv1.getItems().addAll(componentsList.getArrays().keySet());
-                    pv2.getItems().clear();
-                    pv2.getItems().addAll(componentsList.getArrays().keySet());
-                    pv3.getItems().clear();
-                    pv3.getItems().addAll(componentsList.getArrays().keySet());
-                    cost.getItems().clear();
-                    cost.getItems().addAll(componentsList.getCosts().keySet());
-                } else {
-                    t.appendText("Loading FAILED. File moved? Format wrong?\n");
-                }
+                loadComponents();
             }
         });
 
@@ -246,7 +109,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(reload, fudgeBox, new Label("OR"), cache);
+        p.getChildren().addAll(new Label("Data:"), reload, fudgeBox);
         vb.getChildren().add(p);
 //        p = new HBox();
 //        p.setPadding(FxMainAnalysis.INSETS);
@@ -256,13 +119,14 @@ public class FxImportTab extends BorderPane implements Changeable {
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(model, weatherBox, components,
+        p.getChildren().addAll(new Label("Model:"), weatherBox, components,
                 new Label("PV1"), pv1,
                 new Label("PV2"), pv2,
                 new Label("PV3"), pv3,
                 new Label("Inverter"), inverter,
                 new Label("Battery"), battery,
-                new Label("Cost"), cost);
+                new Label("Cost"), cost,
+                model);
         vb.getChildren().add(p);
 //        p = new HBox();
 //        p.setPadding(FxMainAnalysis.INSETS);
@@ -281,5 +145,161 @@ public class FxImportTab extends BorderPane implements Changeable {
         box.setPadding(FxMainAnalysis.INSETS);
 
         setCenter(box);
+
+        loadCache();
+        loadComponents();
+    }
+
+    private void loadCache() {
+        DataStoreCacheReader dsc = new DataStoreCacheReader<Collection<Record>>();
+        dsc.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Loaded successfully " + dsc.toString() + "\n");
+                records = (Collection<Record>) dsc.getValue();
+                t.appendText("Number of records=" + records.size() + "\n");
+                announceChanged();
+                //                      analyse.setDisable(false);
+            }
+        });
+        dsc.setOnFailed(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Failed to load cache " + dsc.toString() + "\n");
+            }
+        });
+        dsc.messageProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue o, Object oldVal,
+                    Object newVal) {
+                t.appendText(newVal.toString() + "\n");
+            }
+        });
+
+        Executors.newSingleThreadExecutor().submit(dsc);
+    }
+
+    private void loadModel() {
+        DataStoreModel dsm = new DataStoreModel<Collection<Record>>();
+        dsm.setWeather(weatherBox.isSelected());
+
+        String sel = (String) pv1.getValue();
+        if (sel != null) {
+            dsm.setPv1(componentsList.getArrays().get(sel));
+        }
+        sel = (String) pv2.getValue();
+        if (sel != null) {
+            dsm.setPv2(componentsList.getArrays().get(sel));
+        }
+        sel = (String) pv3.getValue();
+        if (sel != null) {
+            dsm.setPv3(componentsList.getArrays().get(sel));
+        }
+        sel = (String) inverter.getValue();
+        if (sel != null) {
+            dsm.setInv12(componentsList.getInverters().get(sel));
+        }
+        sel = (String) battery.getValue();
+        if (sel != null) {
+            dsm.setBattery(componentsList.getBatteries().get(sel));
+        }
+        sel = (String) cost.getValue();
+        if (sel != null) {
+            //dsc.setBattery(componentsList.getBatteries().get(sel));
+        }
+//      pv1.valueProperty().addListener(new ChangeListener<String>() {
+//            @Override public void changed(ObservableValue ov, String t, String t1) {                
+//                ppv1;                
+//            }    
+//        });                
+        dsm.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Modelled successfully " + dsm.toString() + "\n");
+                records = (Collection<Record>) dsm.getValue();
+                t.appendText("Number of records=" + records.size() + "\n");
+                announceChanged();
+//                        analyse.setDisable(false);
+            }
+        });
+        dsm.setOnFailed(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Model FAILED " + dsm.toString() + "\n");
+            }
+        });
+        dsm.messageProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue o, Object oldVal,
+                    Object newVal) {
+                t.appendText(newVal.toString() + "\n");
+            }
+        });
+
+        Executors.newSingleThreadExecutor().submit(dsm);
+    }
+
+    private void loadLogs() {
+        DataStoreXls dsx = new DataStoreXls<Collection<Record>>();
+        dsx.setFudge(fudgeBox.isSelected());
+        dsx.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Loaded successfully " + dsx.toString() + "\n");
+                records = (Collection<Record>) dsx.getValue();
+                t.appendText("Number of records=" + records.size() + "\n");
+                //                    analyse.setDisable(false);
+
+                t.appendText("Caching records...\n");
+                DataStoreCacheWriter dsw = new DataStoreCacheWriter();
+                dsw.setData(records);
+                Executors.newSingleThreadExecutor().submit(dsw);
+                announceChanged();
+            }
+        });
+        dsx.setOnFailed(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent ev) {
+                t.appendText("Failed " + dsx.toString() + "\n");
+            }
+        });
+        dsx.messageProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue o, Object oldVal,
+                    Object newVal) {
+                t.appendText(newVal.toString() + "\n");
+            }
+        });
+
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setInitialDirectory(dsx.getFolder());
+
+        File from = directoryChooser.showDialog(null);
+        if (from != null) {
+            dsx.setFolder(from);
+            Executors.newSingleThreadExecutor().submit(dsx);
+        }
+    }
+
+    private void loadComponents() {
+        t.appendText("Loading components.xls\n");
+        if (componentsList.load(new File("components.xls"))) {
+            t.appendText("Loaded successfully\n");
+            t.appendText(componentsList.toString());
+            inverter.getItems().clear();
+            inverter.getItems().addAll(componentsList.getInverters().keySet());
+            battery.getItems().clear();
+            battery.getItems().addAll(componentsList.getBatteries().keySet());
+            pv1.getItems().clear();
+            pv1.getItems().addAll(componentsList.getArrays().keySet());
+            pv2.getItems().clear();
+            pv2.getItems().addAll(componentsList.getArrays().keySet());
+            pv3.getItems().clear();
+            pv3.getItems().addAll(componentsList.getArrays().keySet());
+            cost.getItems().clear();
+            cost.getItems().addAll(componentsList.getCosts().keySet());
+        } else {
+            t.appendText("Loading FAILED. File moved? Format wrong?\n");
+        }
     }
 }

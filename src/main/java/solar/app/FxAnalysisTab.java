@@ -1,18 +1,15 @@
 package solar.app;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
@@ -26,53 +23,35 @@ import static solar.model.SystemData.east;
 import static solar.model.SystemData.garage;
 
 /**
+ * End of day energy performance with smoothing.
  *
  * @author rocky
  */
-public class FxAnalysisTab extends BorderPane implements Listener {
+public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
 
     private final FxSmoothingControl smoothing = new FxSmoothingControl();
-    private final CheckBox arraysCheckBox = new CheckBox("Inputs (otherwise outputs)");
 
-    private final Text yieldBox = new Text();
-    private final Text selfUseBox = new Text();
-    private final Text selfUseRatioBox = new Text();
-    private final Text consumptionBox = new Text();
-    private final Text importBox = new Text();
-    private final Text exportBox = new Text();
-    private final Text capacityFactorBox = new Text();
-
-    private final List<DatedValue> totalPv1 = new ArrayList<>();
-    private final List<DatedValue> totalPv2 = new ArrayList<>();
-    private final List<DatedValue> totalPv3 = new ArrayList<>();
-    private final List<DatedValue> totalGen = new ArrayList<>();
-    private final List<DatedValue> totalImport = new ArrayList<>();
-    private final List<DatedValue> totalExport = new ArrayList<>();
-    private final List<DatedValue> totalConsumption = new ArrayList<>();
-    private final List<DatedValue> totalSelfUse = new ArrayList<>();
-    private final List<DatedValue> totalDischarge = new ArrayList<>();
-    private final List<DatedValue> totalCharge = new ArrayList<>();
-
-    // Collectors used to transfer data from the simulation ot the chart
-    private final XYChart.Series tracePv1 = new XYChart.Series();
-    private final XYChart.Series tracePv2 = new XYChart.Series();
-    private final XYChart.Series tracePv3 = new XYChart.Series();
-    private final XYChart.Series traceGeneration = new XYChart.Series();
-    private final XYChart.Series traceConsumption = new XYChart.Series();
-    private final XYChart.Series traceExported = new XYChart.Series();
-    private final XYChart.Series traceImported = new XYChart.Series();
-    private final XYChart.Series traceSelfUse = new XYChart.Series();
     private FxSummaryTab summaryTab;
-    private Collection<Record> records;
 
     public FxAnalysisTab(FxSummaryTab summaryTab) {
 
         super();
         this.summaryTab = summaryTab;
 
+        yAxis.setLabel("kWh");
+        yAxis.setAutoRanging(true);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(50);
+        yAxis.setTickUnit(10);
+
+        xAxis.setLabel("Day");
+        //xAxis.setAutoRanging(true);
+        xAxis.setLowerBound(1);
+        xAxis.setUpperBound(365);
+        xAxis.setTickUnit(30);
+
         smoothing.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                    Number old_val, Number new_val) {
+            public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 if (!smoothing.isValueChanging()) {
                     analyse();
                     plot();
@@ -83,34 +62,14 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Text("Smoothing"), smoothing, arraysCheckBox);
+        p.getChildren().addAll(new Text("Smoothing"), smoothing);
         setTop(p);
 
-        final NumberAxis xAxis = new NumberAxis(1, 365, 7);
-        final NumberAxis yAxis = new NumberAxis(0, 50, 10);
-        final LineChart<Number, Number> sc = new LineChart<>(xAxis, yAxis);
-        sc.setPrefSize(10000, 10000);
-        xAxis.setLabel("Day");
-        yAxis.setLabel("kWh");
-        tracePv1.setName("pv1");
-        tracePv2.setName("pv2");
-        tracePv3.setName("pv3");
-        traceGeneration.setName("Generation");
-        traceConsumption.setName("Consumption");
-        traceImported.setName("Imported");
-        traceExported.setName("Exported");
-        traceSelfUse.setName("Self Use");
-        sc.getData().addAll(traceGeneration, traceConsumption, traceImported, traceExported, traceSelfUse);
-        sc.setCreateSymbols(false);
-
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.getChildren().addAll(sc);
-        setCenter(p);
-
+        VBox v = new VBox();
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(new Label("Usage:"));
         p.getChildren().addAll(new Label("Consumption"), size(consumptionBox));
         p.getChildren().addAll(new Label("Inverter"), size(yieldBox));
         p.getChildren().addAll(new Label("Export"), size(exportBox));
@@ -118,37 +77,43 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         p.getChildren().addAll(new Label("Self use"), size(selfUseBox));
         p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
         p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
-        setBottom(p);
+        v.getChildren().add(p);
+        p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(new Label("Battery:"));
+        p.getChildren().addAll(new Label("Capacity"), size(nominalCapacityBox));
+        p.getChildren().addAll(new Label("Charge"), size(chargeBox));
+        p.getChildren().addAll(new Label("Discharge"), size(dischargeBox));
+        p.getChildren().addAll(new Label("Mean discharge"), size(dailyBox));
+        p.getChildren().addAll(new Label("Utilisation"), size(utilisationBox));
+        p.getChildren().addAll(new Label("Efficiency"), size(efficiencyBox));
+        v.getChildren().add(p);
+        setBottom(v);
+//        nominalCapacityBox.setTooltip(new Tooltip("Nominal capacity of the battries. (Not the same as the effective capacity which allows for a safe DOD)"));
+//        chargeBox.setTooltip(new Tooltip("Daily charge"));
+//        dischargeBox.setTooltip(new Tooltip("Daily discharge"));
+//        dailyBox.setTooltip(new Tooltip("Mean discharge"));
+//        utilisationBox.setTooltip(new Tooltip("Ratio of mean discharge to capacity"));
+//        efficiencyBox.setTooltip(new Tooltip("Efficiency of the combined charge/discharge cycle"));
     }
 
-    private void analyse() {
+    @Override
+    protected void analyse() {
 
-        totalPv1.clear();
-        totalPv2.clear();
-        totalPv3.clear();
-        totalGen.clear();
-        totalImport.clear();
-        totalExport.clear();
-        totalConsumption.clear();
-        totalSelfUse.clear();
-
-        totalGen.clear();
-        totalSelfUse.clear();
-        totalExport.clear();
-        totalImport.clear();
-        totalConsumption.clear();
-
-        //System.out.println("input="+records.size());
+        for (Collection<DatedValue> ll : accumulators) {
+            ll.clear();
+        }
         List<Record> endOfDays = new RecordFilter<>(records).endOfPeriod(Period.DAY).result();
-        //System.out.println("end of day="+endOfDays.size());
         for (Record r : endOfDays) {
-            
+
             totalCharge.add(new DatedValue(r.getDate(), r.geteChgDay()));
             totalDischarge.add(new DatedValue(r.getDate(), r.geteDisChgDay()));
 
             totalPv1.add(new DatedValue(r.getDate(), r.getePv1Day()));
             totalPv2.add(new DatedValue(r.getDate(), r.getePv2Day()));
             totalPv3.add(new DatedValue(r.getDate(), r.getePv3Day()));
+            totalCombined.add(new DatedValue(r.getDate(), r.getePv1Day() + r.getePv2Day() + r.getePv3Day()));
 
             double generated = r.geteInvDay();
             double exported = r.geteToGridDay();
@@ -175,32 +140,46 @@ public class FxAnalysisTab extends BorderPane implements Listener {
         selfUseRatioBox.setText(String.format("%3.1f%%", 100 * totalSelfUseTotal / totalGenTotal));
         capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGenTotal / ratedCapacity));
 
-        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
+        double batteryCapacity = SystemData.battery.getNominalCapacity();
+        double chg = new DatedValueFilter(totalCharge).total();
+        double dis = new DatedValueFilter(totalDischarge).total();
+        nominalCapacityBox.setText(String.format("%3.1f kWh", batteryCapacity));
+        chargeBox.setText(String.format("%3.1f kWh", chg));
+        dischargeBox.setText(String.format("%3.1f kWh", dis));
+        if (records.size() > 0) {
+            double mean = dis / totalDischarge.size();
+            dailyBox.setText(String.format("%3.1f kWh", mean));
+            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / batteryCapacity));
+            efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
+        }
+        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
     }
 
-    private void plot() {
+    @Override
+    protected void plot() {
         int sm = smoothing.getSmoothingValue();
 
+        // Inefficient: plots all traces before deciding whether or not to display them.
+        plot(tracePv1, totalPv1, sm);
+        plot(tracePv2, totalPv2, sm);
+        plot(tracePv3, totalPv3, sm);
+        plot(traceCombined, totalCombined, sm);
         plot(traceGeneration, totalGen, sm);
+        plot(traceExported, totalExport, sm);
+        plot(traceConsumption, totalConsumption, sm);
+        plot(traceSelfUse, totalSelfUse, sm);
+        plot(traceImported, totalImport, sm);
+        plot(traceCharge, totalCharge, sm);
+        plot(traceDischarge, totalDischarge, sm);
 
-        if (arraysCheckBox.isSelected()) {
-            plot(tracePv1, totalPv1, sm);
-            plot(tracePv2, totalPv2, sm);
-            plot(tracePv3, totalPv3, sm);
-
-            traceImported.getData().clear();
-            traceExported.getData().clear();
-            traceConsumption.getData().clear();
-            traceSelfUse.getData().clear();
-        } else {
-            plot(traceImported, totalImport, sm);
-            plot(traceExported, totalExport, sm);
-            plot(traceConsumption, totalConsumption, sm);
-            plot(traceSelfUse, totalSelfUse, sm);
-
-            tracePv1.getData().clear();
-            tracePv2.getData().clear();
-            tracePv3.getData().clear();
+        for (Map.Entry<CheckBox, XYChart.Series> e : traces.entrySet()) {
+            boolean show = e.getKey().isSelected();
+            XYChart.Series trace = e.getValue();
+            if (show && !sc.getData().contains(trace)) {
+                sc.getData().add(trace);
+            } else if (!show && sc.getData().contains(trace)) {
+                sc.getData().remove(trace);
+            }
         }
     }
 
@@ -212,18 +191,5 @@ public class FxAnalysisTab extends BorderPane implements Listener {
             // + 0.5 to plot in the middle of the period
             trace.getData().add(new XYChart.Data(e.getKey() + 0.5, e.getValue()));
         }
-    }
-
-    @Override
-    public void changed(Collection<Record> records, String description) {
-        this.records = records;
-        analyse();
-        plot();
-    }
-
-    private Text size(Text t) {
-//        t.setFill(new Paint(Color.red));
-//        setPrefSize(80, 12);
-        return t;
     }
 }

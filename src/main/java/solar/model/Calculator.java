@@ -438,4 +438,11 @@ public class Calculator {
         }
         return out;
     }
+    
+    private static final String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    
+    public static String monthName(int month)
+    {
+        return monthNames[month];
+    }
 }
