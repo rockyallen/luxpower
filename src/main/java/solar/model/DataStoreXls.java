@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javafx.concurrent.Task;
@@ -21,7 +22,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
  *
  * @author rocky
  */
-public class DataStoreXls<T> extends Task {
+public class DataStoreXls extends Task {
 
     // If true, pretend that PV3 is the south array and set its energy values to 0.27 times the sum of the other 2.
     // Appplies the same factor to the power, but this does not affect the analysis just the graphs so I dont cate how accuracte it is.
@@ -63,7 +64,8 @@ public class DataStoreXls<T> extends Task {
         return records;
     }
 
-    public void importFolder(File folder) throws Exception {
+    private void importFolder(File folder) throws Exception {
+        Objects.nonNull(folder);
         File[] listOfFiles = folder.listFiles();
 
         for (File listOfFile : listOfFiles) {
@@ -92,9 +94,8 @@ public class DataStoreXls<T> extends Task {
 
             SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-            // Uncomment "rows-" to only store the final record each day. 
             if (rows > 1) {
-                for (int r = /* rows- */ 1; r < rows; r++) {
+                for (int r = 1; r < rows; r++) {
                     row = sheet.getRow(r);
                     if (row != null) {
 
@@ -117,11 +118,11 @@ public class DataStoreXls<T> extends Task {
 
                         record.setpCharge((float) row.getCell(11).getNumericCellValue());
                         record.setpDisCharge((float) row.getCell(12).getNumericCellValue());
-                        
+
                         record.setPinv((float) row.getCell(17).getNumericCellValue());
                         record.setpToGrid((float) row.getCell(26).getNumericCellValue());
                         record.setpToUser((float) row.getCell(27).getNumericCellValue());
-  
+
                         record.seteInvDay(Float.valueOf(row.getCell(32).getStringCellValue()));
                         record.seteChgDay(Float.valueOf(row.getCell(34).getStringCellValue()));
                         record.seteDisChgDay(Float.valueOf(row.getCell(35).getStringCellValue()));
@@ -146,21 +147,9 @@ public class DataStoreXls<T> extends Task {
                 }
             }
         }
-        //os.println(nRecords + " records imported");
+        updateMessage(nRecords + " records created");
     }
 
-    /**
-     * Read only.
-     *
-     * @param records
-     * @return
-     *
-     * @throws UnsupportedOperationException always
-     */
-//    @Override
-//    public boolean put(Collection<Record> records) {
-//        throw new UnsupportedOperationException("Not supported"); //To change body of generated methods, choose Tools | Templates.
-//    }
     @Override
     public String toString() {
         return "Imported data";
@@ -181,6 +170,7 @@ public class DataStoreXls<T> extends Task {
     }
 
     public void setFolder(File from) {
+        Objects.nonNull(from);
         folder = from;
         prefs.put(DS, from.getAbsolutePath());
     }
@@ -193,6 +183,4 @@ public class DataStoreXls<T> extends Task {
         File ff = new File(f);
         return ff;
     }
-
-
 }

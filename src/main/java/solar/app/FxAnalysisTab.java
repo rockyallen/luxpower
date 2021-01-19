@@ -90,12 +90,6 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         p.getChildren().addAll(new Label("Efficiency"), size(efficiencyBox));
         v.getChildren().add(p);
         setBottom(v);
-//        nominalCapacityBox.setTooltip(new Tooltip("Nominal capacity of the battries. (Not the same as the effective capacity which allows for a safe DOD)"));
-//        chargeBox.setTooltip(new Tooltip("Daily charge"));
-//        dischargeBox.setTooltip(new Tooltip("Daily discharge"));
-//        dailyBox.setTooltip(new Tooltip("Mean discharge"));
-//        utilisationBox.setTooltip(new Tooltip("Ratio of mean discharge to capacity"));
-//        efficiencyBox.setTooltip(new Tooltip("Efficiency of the combined charge/discharge cycle"));
     }
 
     @Override
@@ -120,7 +114,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             double selfUse = generated - exported;
             double imported = r.geteToUserDay();
 
-            totalGen.add(new DatedValue(r.getDate(), r.geteInvDay()));
+            totalInverter.add(new DatedValue(r.getDate(), r.geteInvDay()));
             totalSelfUse.add(new DatedValue(r.getDate(), selfUse));
             totalExport.add(new DatedValue(r.getDate(), exported));
             totalImport.add(new DatedValue(r.getDate(), imported));
@@ -130,7 +124,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         final double ratedPower = (garage.power + east.power + west.power) / 1000.0; // kW
         final double ratedCapacity = ratedPower * 365 * 24; // kW
 
-        double totalGenTotal = new DatedValueFilter(totalGen).total();
+        double totalGenTotal = new DatedValueFilter(totalInverter).total();
         double totalSelfUseTotal = new DatedValueFilter(totalSelfUse).total();
         yieldBox.setText(String.format("%3.0f kWh", totalGenTotal));
         importBox.setText(String.format("%3.0f kWh", new DatedValueFilter(totalImport).total()));
@@ -152,7 +146,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             utilisationBox.setText(String.format("%3.1f%%", 100 * mean / batteryCapacity));
             efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
         }
-        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, totalGen, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
+        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
     }
 
     @Override
@@ -164,7 +158,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         plot(tracePv2, totalPv2, sm);
         plot(tracePv3, totalPv3, sm);
         plot(traceCombined, totalCombined, sm);
-        plot(traceGeneration, totalGen, sm);
+        plot(traceInverter, totalInverter, sm);
         plot(traceExported, totalExport, sm);
         plot(traceConsumption, totalConsumption, sm);
         plot(traceSelfUse, totalSelfUse, sm);
@@ -177,6 +171,10 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             XYChart.Series trace = e.getValue();
             if (show && !sc.getData().contains(trace)) {
                 sc.getData().add(trace);
+                
+                       //trace.getNode().setStyle("-fx-stroke: rgba(0,0,255, 0.15);");
+
+                
             } else if (!show && sc.getData().contains(trace)) {
                 sc.getData().remove(trace);
             }

@@ -79,30 +79,48 @@ public class EnergyStore {
     }
 
     /**
-     * Try to draw energy from it.
+     * Try to draw power from it.
      *
-     * @param energy Wh
-     * @return the actual amount removed.
+     * The returned power is initially the lower of the discharge limit and the
+     * demanded power. Then check if there is enough energy. If not, all the
+     * remaining energy is used, and the returned power is the average power
+     * over t.
+     *
+     * @param p power demanded W
+     * @param t time it is demanded for hr
+     *
+     * @return the average power delivered over time t.
      */
-    public double demand(double energy) {
+    public double demand(double p, double t) {
+        if (p <= 0.0) {
+            throw new IllegalArgumentException("power demand must be +ve");
+        }
+        if (t <= 0.0) {
+            throw new IllegalArgumentException("time step must be +ve");
+        }
         double ret = 0.0;
+
+        double p1 = Math.max(p, pDischargeMax);
+
+        double energy = p1 * t;
+
         if (getCurrentEnergy() > energy) {
             // you can have it all
             currentEnergy -= energy;
-            ret = energy;
+            ret = p1;
         } else {
             // empty it
-            ret = getCurrentEnergy();
+            ret = getCurrentEnergy() / t;
             currentEnergy = 0.0;
         }
-        discharge += ret;
+        discharge += ret * t;
         return ret;
     }
 
     /**
      * What is the current amount of energy in the store?
      *
-     * @return
+     * @return wh
      */
     public double getEnergy() {
         return getCurrentEnergy();

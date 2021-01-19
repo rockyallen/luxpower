@@ -7,6 +7,7 @@ package solar.model;
  */
 public class SolarArray {
 
+    private static Calculator calc = new Calculator();
     /**
      * Sum of area of all modules
      */
@@ -61,7 +62,7 @@ public class SolarArray {
      * @return Power Watts
      */
     public double availablePower(int dday, double hour) {
-        double insolation = Calculator.insSolarRadiation(hour, SystemData.latitude, SystemData.longitude, 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
+        double insolation = calc.insSolarRadiation(hour, SystemData.latitude, SystemData.longitude, 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
         return Math.max(0, efficiency * area * insolation);
     }
 

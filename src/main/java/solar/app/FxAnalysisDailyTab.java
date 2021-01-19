@@ -52,7 +52,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
         xAxis.setLabel("Hour");
         //xAxis.setAutoRanging(true);
-        xAxis.setLowerBound(1);
+        xAxis.setLowerBound(0);
         xAxis.setUpperBound(24);
         xAxis.setTickUnit(1);
 
@@ -88,6 +88,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
         Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.MONTH).result();
 
+        //System.out.println("Analysing month="+ monthControl.getMonth()+ " records="+thisMonthRecords.size());
         for (XYChart.Series s : traces.values()) {
             s.getData().clear();
         }
@@ -104,27 +105,31 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
                 totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));
                 totalPv2.add(new DatedValue(r.getDate(), r.getPpv2()));
                 totalPv3.add(new DatedValue(r.getDate(), r.getPpv3()));
-                totalCombined.add(new DatedValue(r.getDate(), r.getPpv1()+r.getPpv2()+r.getPpv3()));
+                totalCombined.add(new DatedValue(r.getDate(), r.getPpv1() + r.getPpv2() + r.getPpv3()));
 
-                double generated = r.getPinv();
+                double generated = r.getPinv() - r.getpDisCharge();
                 double exported = r.getpToGrid();
-                double selfUse = generated - exported;
                 double imported = r.getpToUser();
-                double consumption = imported + selfUse;
+                double charge = r.getpCharge();
+                double disCharge = r.getpDisCharge();
+                double selfUse = generated - exported - charge;
+                double consumption = imported + selfUse + disCharge;
 
-                totalGen.add(new DatedValue(r.getDate(), generated));
+                totalGeneration.add(new DatedValue(r.getDate(), generated));
+                totalInverter.add(new DatedValue(r.getDate(), r.getPinv()));
                 totalSelfUse.add(new DatedValue(r.getDate(), selfUse));
                 totalExport.add(new DatedValue(r.getDate(), exported));
                 totalImport.add(new DatedValue(r.getDate(), imported));
                 totalConsumption.add(new DatedValue(r.getDate(), consumption));
-                totalCharge.add(new DatedValue(r.getDate(), r.getpCharge()));
+                totalCharge.add(new DatedValue(r.getDate(), charge));
                 totalDischarge.add(new DatedValue(r.getDate(), r.getpDisCharge()));
             }
             addPoint(tracePv1, totalPv1, hour, 0.001);
             addPoint(tracePv2, totalPv2, hour, 0.001);
             addPoint(tracePv3, totalPv3, hour, 0.001);
             addPoint(traceCombined, totalCombined, hour, 0.001);
-            addPoint(traceGeneration, totalGen, hour, 0.001);
+            addPoint(traceGeneration, totalGeneration, hour, 0.001);
+            addPoint(traceInverter, totalInverter, hour, 0.001);
             addPoint(traceExported, totalExport, hour, 0.001);
             addPoint(traceImported, totalImport, hour, 0.001);
             addPoint(traceSelfUse, totalSelfUse, hour, 0.001);

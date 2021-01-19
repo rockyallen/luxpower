@@ -21,8 +21,7 @@ public class FxMonthControl extends HBox {
 
     private final Slider slider = new Slider(1, 12, 1);
     private final Label label = new Label("  Jan");
-    // I think 99 ensure that it triggers on startup
-    private final IntegerProperty monthProperty = new SimpleIntegerProperty(99);
+    private final IntegerProperty monthProperty = new SimpleIntegerProperty();
 
     public FxMonthControl() {
         label.setPrefWidth(50);
@@ -33,6 +32,8 @@ public class FxMonthControl extends HBox {
         slider.setPrefSize(400, 20);
         slider.setSnapToTicks(true);
         slider.setTooltip(new Tooltip("Month 1-12"));
+        monthProperty.set(Math.round((int)slider.getValue()));
+        
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 monthProperty.setValue(Math.round(new_val.floatValue()));

@@ -37,10 +37,8 @@ import solar.model.Record;
  */
 public class FxImportTab extends BorderPane implements Changeable {
 
-    private final Button components = new Button("Components");
+    //private final Button components = new Button("Components");
     private final Button reload = new Button("Import");
-    //private final Button cache = new Button("Cache");
-    //private final Button analyse = new Button("Analyse");
     private final Button model = new Button("Go");
     private final TextArea t = new TextArea("");
     private final CheckBox weatherBox = new CheckBox("Weather");
@@ -79,12 +77,6 @@ public class FxImportTab extends BorderPane implements Changeable {
             }
         });
 
-//        cache.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent value) {
-//                loadCache();
-//            }
-//        });
         reload.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
@@ -92,34 +84,24 @@ public class FxImportTab extends BorderPane implements Changeable {
             }
         });
 
-        components.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent value) {
-                loadComponents();
-            }
-        });
-
-//        analyse.setOnAction(value -> {
-//            announceChanged();
-//            analyse.setDisable(true);
+//        components.setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent value) {
+//                loadComponents();
+//            }
 //        });
-//
-//        analyse.setDisable(true);
+
         VBox vb = new VBox();
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
         p.getChildren().addAll(new Label("Data:"), reload, fudgeBox);
         vb.getChildren().add(p);
-//        p = new HBox();
-//        p.setPadding(FxMainAnalysis.INSETS);
-//        p.setSpacing(FxMainAnalysis.SPACING);
-//        p.getChildren().addAll(cache);
-//        vb.getChildren().add(p);
+
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Model:"), weatherBox, components,
+        p.getChildren().addAll(new Label("Model:"), weatherBox, // components,
                 new Label("PV1"), pv1,
                 new Label("PV2"), pv2,
                 new Label("PV3"), pv3,
@@ -128,11 +110,6 @@ public class FxImportTab extends BorderPane implements Changeable {
                 new Label("Cost"), cost,
                 model);
         vb.getChildren().add(p);
-//        p = new HBox();
-//        p.setPadding(FxMainAnalysis.INSETS);
-//        p.setSpacing(FxMainAnalysis.SPACING);
-//        p.getChildren().addAll(analyse);
-//        vb.getChildren().add(p);
         setTop(vb);
 
         ScrollPane sp = new ScrollPane();
@@ -151,7 +128,7 @@ public class FxImportTab extends BorderPane implements Changeable {
     }
 
     private void loadCache() {
-        DataStoreCacheReader dsc = new DataStoreCacheReader<Collection<Record>>();
+        DataStoreCacheReader dsc = new DataStoreCacheReader();
         dsc.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent ev) {
@@ -180,7 +157,7 @@ public class FxImportTab extends BorderPane implements Changeable {
     }
 
     private void loadModel() {
-        DataStoreModel dsm = new DataStoreModel<Collection<Record>>();
+        DataStoreModel dsm = new DataStoreModel();
         dsm.setWeather(weatherBox.isSelected());
 
         String sel = (String) pv1.getValue();
@@ -219,7 +196,6 @@ public class FxImportTab extends BorderPane implements Changeable {
                 records = (Collection<Record>) dsm.getValue();
                 t.appendText("Number of records=" + records.size() + "\n");
                 announceChanged();
-//                        analyse.setDisable(false);
             }
         });
         dsm.setOnFailed(new EventHandler<WorkerStateEvent>() {
@@ -235,12 +211,11 @@ public class FxImportTab extends BorderPane implements Changeable {
                 t.appendText(newVal.toString() + "\n");
             }
         });
-
         Executors.newSingleThreadExecutor().submit(dsm);
     }
 
     private void loadLogs() {
-        DataStoreXls dsx = new DataStoreXls<Collection<Record>>();
+        DataStoreXls dsx = new DataStoreXls();
         dsx.setFudge(fudgeBox.isSelected());
         dsx.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override

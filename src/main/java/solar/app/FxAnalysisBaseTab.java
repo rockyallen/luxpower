@@ -21,7 +21,9 @@ import solar.model.Listener;
 import solar.model.Record;
 
 /**
- * Common stuff for energy and power graphs. Saves duplication of code.
+ * Common stuff for energy and power graphs. Saves duplication of code. Puts the
+ * graph in the centre pane, and a trace selector in the right pane. Subclasses
+ * can use the top and bottom panes if they want.
  *
  * @author rocky
  */
@@ -48,7 +50,8 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     protected final List<DatedValue> totalPv2 = new ArrayList<>();
     protected final List<DatedValue> totalPv3 = new ArrayList<>();
     protected final List<DatedValue> totalCombined = new ArrayList<>();
-    protected final List<DatedValue> totalGen = new ArrayList<>();
+    protected final List<DatedValue> totalGeneration = new ArrayList<>();
+    protected final List<DatedValue> totalInverter = new ArrayList<>();
     protected final List<DatedValue> totalImport = new ArrayList<>();
     protected final List<DatedValue> totalExport = new ArrayList<>();
     protected final List<DatedValue> totalConsumption = new ArrayList<>();
@@ -62,6 +65,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     protected final XYChart.Series tracePv3 = new XYChart.Series();
     protected final XYChart.Series traceCombined = new XYChart.Series();
     protected final XYChart.Series traceGeneration = new XYChart.Series();
+    protected final XYChart.Series traceInverter = new XYChart.Series();
     protected final XYChart.Series traceConsumption = new XYChart.Series();
     protected final XYChart.Series traceExported = new XYChart.Series();
     protected final XYChart.Series traceImported = new XYChart.Series();
@@ -81,24 +85,27 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     public FxAnalysisBaseTab() {
 
         super();
+        allCheckBox.setSelected(true);
 
-        traces.put(new CheckBox("PV1"), tracePv1);
-        traces.put(new CheckBox("PV2"), tracePv2);
-        traces.put(new CheckBox("PV3"), tracePv3);
-        traces.put(new CheckBox("Combined"), traceCombined);
-        traces.put(new CheckBox("Generation"), traceGeneration);
-        traces.put(new CheckBox("Consumed"), traceConsumption);
-        traces.put(new CheckBox("Imported"), traceImported);
-        traces.put(new CheckBox("Exported"), traceExported);
-        traces.put(new CheckBox("Charge"), traceCharge);
-        traces.put(new CheckBox("Discharge"), traceDischarge);
-        traces.put(new CheckBox("Self use"), traceSelfUse);
+        configure(traces, "PV1", tracePv1);
+        configure(traces, "PV2", tracePv2);
+        configure(traces, "PV3", tracePv3);
+        configure(traces, "Combined", traceCombined);
+        configure(traces, "Generation", traceGeneration);
+        configure(traces, "Inverter", traceInverter);
+        configure(traces, "Consumption", traceConsumption);
+        configure(traces, "Imported", traceImported);
+        configure(traces, "Exported", traceExported);
+        configure(traces, "Self-Use", traceSelfUse);
+        configure(traces, "Charge", traceCharge);
+        configure(traces, "Discharge", traceDischarge);
 
         accumulators.add(totalPv1);
         accumulators.add(totalPv2);
         accumulators.add(totalPv3);
         accumulators.add(totalCombined);
-        accumulators.add(totalGen);
+        accumulators.add(totalGeneration);
+        accumulators.add(totalInverter);
         accumulators.add(totalImport);
         accumulators.add(totalExport);
         accumulators.add(totalConsumption);
@@ -106,6 +113,12 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
         accumulators.add(totalDischarge);
         accumulators.add(totalCharge);
 
+//        nominalCapacityBox.setTooltip(new Tooltip("Nominal capacity of the batteries. (Not the same as the effective capacity which allows for a safe DOD)"));
+//        chargeBox.setTooltip(new Tooltip("Daily charge"));
+//        dischargeBox.setTooltip(new Tooltip("Daily discharge"));
+//        dailyBox.setTooltip(new Tooltip("Mean discharge"));
+//        utilisationBox.setTooltip(new Tooltip("Ratio of mean discharge to capacity"));
+//        efficiencyBox.setTooltip(new Tooltip("Efficiency of the combined charge/discharge cycle"));
         for (CheckBox b : traces.keySet()) {
             b.selectedProperty().addListener(new ChangeListener<Boolean>() {
                 @Override
@@ -127,18 +140,6 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
         sc.setPrefSize(10000, 10000);
         sc.setAnimated(false);
         sc.setCreateSymbols(false);
-
-        tracePv1.setName("pv1");
-        tracePv2.setName("pv2");
-        tracePv3.setName("pv3");
-        traceCombined.setName("Combined");
-        traceGeneration.setName("Generation");
-        traceConsumption.setName("Consumption");
-        traceImported.setName("Imported");
-        traceExported.setName("Exported");
-        traceSelfUse.setName("Self Use");
-        traceCharge.setName("Charge");
-        traceDischarge.setName("Discharge");
 
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
@@ -168,5 +169,19 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
 
     protected Text size(Text t) {
         return t;
+    }
+
+    /**
+     * Helper to reduce boiler plate
+     *
+     * @param traces
+     * @param name
+     * @param trace
+     */
+    private void configure(Map<CheckBox, XYChart.Series> traces, String name, XYChart.Series trace) {
+        trace.setName(name);
+        CheckBox b = new CheckBox(name);
+        b.setSelected(true);
+        traces.put(b, trace);
     }
 }
