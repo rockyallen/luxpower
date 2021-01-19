@@ -37,19 +37,19 @@ public class EnergyStoreTest {
      */
     @Test
     public void testStore() {
-        EnergyStore instance = new EnergyStore("vvv", "", 10, 10, 1, 1000, 1000);
+        EnergyStore instance = new EnergyStore("vvv", "", 10000, 10000, 1, 1000, 1000);
+        
         assertEquals(instance.getEnergy(), 0.0, 0.0001);
 
-        double energy = 7.0;
         // enough space
-        assertEquals(7.0, instance.store(7.0), 0.0001);
-        assertEquals(7.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(700,10);
+        assertEquals(7000, instance.getCurrentEnergy(), 0.0001);
         // filled
-        assertEquals(3.0, instance.store(7.0), 0.0001);
-        assertEquals(10.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(700,10);
+        assertEquals(10000.0, instance.getCurrentEnergy(), 0.0001);
         // over filled
-        assertEquals(0.0, instance.store(7.0), 0.0001);
-        assertEquals(10.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(700,10);
+        assertEquals(10000.0, instance.getCurrentEnergy(), 0.0001);
     }
 
     /**
@@ -59,12 +59,12 @@ public class EnergyStoreTest {
     public void testDemandAndLog() {
         EnergyStore instance = new EnergyStore("vvv", "", 10, 10, 1, 1000, 1000);
 
-        instance.store(8.0);
+        instance.store(8.0,1);
 
-        assertEquals(2.0, instance.demand(2.0), 0.0001);
+        instance.demand(2.0,1);
         assertEquals(6.0, instance.getCurrentEnergy(), 0.0001);
 
-        assertEquals(3.0, instance.store(3.0), 0.0001);
+        instance.store(3.0,1);
         assertEquals(9.0, instance.getCurrentEnergy(), 0.0001);
 
         assertEquals(11.0, instance.getCharge(), 0.0001);
@@ -79,12 +79,12 @@ public class EnergyStoreTest {
     public void testEfficiency() {
         EnergyStore instance = new EnergyStore("vvv", "", 10, 10, 0.9, 1000, 1000);
 
-        instance.store(9.0);
+        instance.store(9.0,1);
 
         assertEquals(8.1, instance.getCurrentEnergy(), 0.0001);
         assertEquals(9.0, instance.getCharge(), 0.0001);
 
-        assertEquals(3.0, instance.demand(3.0), 0.0001);
+        assertEquals(3.0, instance.demand(3.0,1), 0.0001);
         assertEquals(3.0, instance.getDischarge(), 0.0001);
         assertEquals(5.1, instance.getCurrentEnergy(), 0.0001);
     }

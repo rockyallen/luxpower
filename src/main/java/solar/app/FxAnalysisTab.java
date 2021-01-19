@@ -50,12 +50,10 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         xAxis.setUpperBound(365);
         xAxis.setTickUnit(30);
 
-        smoothing.valueProperty().addListener(new ChangeListener<Number>() {
+        smoothing.getSmoothingProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
-                if (!smoothing.isValueChanging()) {
-                    analyse();
-                    plot();
-                }
+                analyse();
+                plot();
             }
         });
 
@@ -171,10 +169,8 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             XYChart.Series trace = e.getValue();
             if (show && !sc.getData().contains(trace)) {
                 sc.getData().add(trace);
-                
-                       //trace.getNode().setStyle("-fx-stroke: rgba(0,0,255, 0.15);");
 
-                
+                //trace.getNode().setStyle("-fx-stroke: rgba(0,0,255, 0.15);");
             } else if (!show && sc.getData().contains(trace)) {
                 sc.getData().remove(trace);
             }

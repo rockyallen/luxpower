@@ -81,18 +81,16 @@ public class DataStoreModel extends Task {
                         double pdischarge = 0.0;
                         double consumptionPower = SystemData.HOURLY_CONSUMPTION[solarHour] * 1000;
 
-                        if (generated > consumptionPower) {
+                        if (generated > consumptionPower) { // excess
                             // user first
                             selfUsePower = consumptionPower;
                             // then battery
                             double powerLeft = generated - selfUsePower;
-                            double energyStored = battery.store(powerLeft * stepSize);
-                            // AVERAGE power over time step
-                            pcharge = energyStored / stepSize;
+                            pcharge = battery.store(powerLeft, stepSize);
                             // then export
                             exportPower = powerLeft - pcharge;
                             importPower = 0.0;
-                        } else {
+                        } else { // deficit
                             // user first
                             selfUsePower = generated;
                             // then from battery
