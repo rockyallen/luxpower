@@ -32,7 +32,8 @@ import solar.model.DataStoreModel;
 import solar.model.Record;
 
 /**
- *
+ * Pull in data from logs, or run a model.
+ * 
  * @author rocky
  */
 public class FxImportTab extends BorderPane implements Changeable {
@@ -63,7 +64,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         t.appendText("Updating graphs...\n");
         for (Listener ll : listeners) {
             t.appendText(ll.toString() + "...\n");
-            ll.changed(records, "");
+            ll.changed(records, componentsList);
         }
         t.appendText("Done\n");
     }
@@ -162,28 +163,30 @@ public class FxImportTab extends BorderPane implements Changeable {
 
         String sel = (String) pv1.getValue();
         if (sel != null) {
-            dsm.setPv1(componentsList.getArrays().get(sel));
+            componentsList.setPv1(componentsList.getArrays().get(sel));
         }
         sel = (String) pv2.getValue();
         if (sel != null) {
-            dsm.setPv2(componentsList.getArrays().get(sel));
+            componentsList.setPv2(componentsList.getArrays().get(sel));
         }
         sel = (String) pv3.getValue();
         if (sel != null) {
-            dsm.setPv3(componentsList.getArrays().get(sel));
+            componentsList.setPv3(componentsList.getArrays().get(sel));
         }
         sel = (String) inverter.getValue();
         if (sel != null) {
-            dsm.setInv12(componentsList.getInverters().get(sel));
+            componentsList.setInv12(componentsList.getInverters().get(sel));
         }
         sel = (String) battery.getValue();
         if (sel != null) {
-            dsm.setBattery(componentsList.getBatteries().get(sel));
+            componentsList.setBattery(componentsList.getBatteries().get(sel));
         }
         sel = (String) cost.getValue();
         if (sel != null) {
-            //dsc.setBattery(componentsList.getBatteries().get(sel));
+            componentsList.setCost(componentsList.getCosts().get(sel));
         }
+        
+        dsm.setComponents(componentsList);
 //      pv1.valueProperty().addListener(new ChangeListener<String>() {
 //            @Override public void changed(ObservableValue ov, String t, String t1) {                
 //                ppv1;                

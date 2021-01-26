@@ -5,24 +5,24 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 
 /**
- * Returns positive odd integers only
+ * Returns positive odd integers suitable for driving a tophat filter.
+ *
+ * @design JavaFX doesn't seem to have an integer slider, so encapsulate one and
+ * attach it to an integer property.
  *
  * @author rocky
  */
 public class FxSmoothingControl extends HBox {
 
     private final Slider slider = new Slider(1, 31, 1);
-    //private final Label label = new Label("  1");
     private final IntegerProperty monthProperty = new SimpleIntegerProperty();
 
     public FxSmoothingControl() {
-  //      label.setPrefWidth(50);
         slider.setBlockIncrement(1);
         slider.setMajorTickUnit(2);
         slider.setMinorTickCount(0);
@@ -41,13 +41,7 @@ public class FxSmoothingControl extends HBox {
             }
         });
 
-//        monthProperty.addListener(new ChangeListener<Number>() {
-//            public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
-//                label.setText("  " + monthProperty.getValue());
-//            }
-//        });
         this.getChildren().add(slider);
-//        this.getChildren().add(label);
     }
 
     public int getSmoothingValue() {

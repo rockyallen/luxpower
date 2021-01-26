@@ -4,16 +4,30 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
 /**
+ * Solar irradiance sums.
+ *
  * Pinched this from GitHub. Sums have no provenance.
  *
- * @author xregzx
+ * @threadsafety Immutable
  */
 public class Calculator {
 
     public static final double tropic = 23.45; // degrees
     public static final double springEquinox = 81.0; // julian days
-    public static final double daysPerYear = 365.0; // degrees
+    public static final double daysPerYear = 365.0;
     private static final String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    // Sunny day fractions by month. See Excel
+    // Treat them as a constant value for the month? Or a random number with the specified mean?
+    // Use triangular: https://en.wikipedia.org/wiki/Triangular_distribution 
+    // https://commons.apache.org/proper/commons-math/javadocs/api-3.5/org/apache/commons/math3/distribution/TriangularDistribution.html
+    // no-not triangular because its mean is between 1/3 and 2/3
+    private static final double[] sunnyDays = {0.27, 0.31, 0.37, 0.48, 0.49, 0.47, 0.47, 0.47, 0.41, 0.34, 0.31, 0.25};
+
+    public static final double sunnyDays(int month) {
+        return sunnyDays[month];
+    }
+
     /**
      * Sensible default values?
      */
@@ -40,7 +54,10 @@ public class Calculator {
     /**
      * Calendar data. TODO: Remove. Use Date?
      */
-    public static final int daysPerMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    private static final int daysPerMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    public static int daysPerMonth(int month) {
+        return daysPerMonth[month];
+    }
 
     private static PolynomialSplineFunction attenuation;
     private static PolynomialSplineFunction diffusion;
@@ -88,7 +105,6 @@ public class Calculator {
         return (lstMin + et + 4 * (standardMeridian - longitude));
     }
 
-    //returns time equation
     /**
      * The equation of time (EoT) (in minutes) is an empirical equation that
      * corrects for the eccentricity of the Earth's orbit and the Earth's axial
@@ -98,7 +114,8 @@ public class Calculator {
      *
      * Note max value is 15 minutes so can usually ignore
      *
-     * @param b
+     * @param day Day number 0-364
+     * 
      * @return
      */
     public double timeEquation(int day) {
@@ -251,15 +268,15 @@ public class Calculator {
      * @return ground reflected radiation W/m2
      */
     private double groundReflected(
-            double rho, 
-            double normalIrradiance, 
-            double sunElevation, 
-            double diffusionFactor, 
+            double rho,
+            double normalIrradiance,
+            double sunElevation,
+            double diffusionFactor,
             double panelTilt) {
-        return (rho * 
-                normalIrradiance * 
-                (Math.sin(Math.toRadians(sunElevation)) + diffusionFactor) * 
-                Math.pow(Math.sin(Math.toRadians(panelTilt / 2.0)), 2));
+        return (rho
+                * normalIrradiance
+                * (Math.sin(Math.toRadians(sunElevation)) + diffusionFactor)
+                * Math.pow(Math.sin(Math.toRadians(panelTilt / 2.0)), 2));
     }
 
     /**
@@ -331,8 +348,7 @@ public class Calculator {
      * @param standardMeridian Closest meridian
      * @param panelTilt Panel tilt (relative to horizontal?)
      * @param panelAzimuth Panel direction (relative to south?)
-     * @param month month 0-11
-     * @param date day 0-30
+     * @param day day number 0-364
      * @param cn Scaling for irradiance. Clouds?
      * @param rho Scaling for reflection. Surface color?
      *

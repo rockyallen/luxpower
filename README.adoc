@@ -27,14 +27,11 @@ Battery efficiency::
 Discharge energy divided by the charge energy for a particular period. 
 This is also known as the round-trip efficiency. 90% is good.
 
-The modelling tabs (M) use standard formulae to predict the output  (power and energy) from the system by through the day and year.
-
-The main use is to compare different configurations to optimise placement, inverter choice etc. 
+The main use of the modelling is to compare different configurations to optimise placement, inverter choice etc. 
 You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
 
-== Usage
 
-=== Analysis
+== Viewing downloaded data
 
 . Download the data to any folder, and note where the folder is.
 Put each year's data in a separate folder: the tool can only display 1 year at a time.
@@ -43,7 +40,7 @@ Put each year's data in a separate folder: the tool can only display 1 year at a
 
 . On the import tab, use btn:[Import], and find the data folder when asked.
 
-. When the data has loaded, use btn:[Analyse] to populate the other tabs.
+. When the data has loaded, the other tabs will be automatically populated.
 
 . Activate the Power, Energy and Battery tabs as required.
 
@@ -54,15 +51,20 @@ Put each year's data in a separate folder: the tool can only display 1 year at a
 You only need to use btn:[Import] the first time you use the app, or if you have changed any files to the data folder.
 Otherwise use btn:[Cache] which will load much faster.
 
-=== Modelling
+== Modelling
+
+. If necessary, edit the file "components.xls" in the app folder.
 
 . Start the app.
-Press btn:[Model] then btn:[Analyse].
+
+. On the Data tab, configure the system to be modelled by selecting the components from the drop-downs.
+
+. Press btn:[Model].
 
 . Activate the Power, Energy and Summary tabs as required.
 
 . Use the Month sliders to scroll through the year a month at a time.
 
-. The model is only for the single configuration shown. 
-There are no changes you can make (TBD).
+. To change the model, exit the app, edit "components.xls" and restart the app. (Should I add a reload button?)
+
 

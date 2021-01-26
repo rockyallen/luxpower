@@ -1,7 +1,7 @@
 package solar.model;
 
 /**
- *
+ * Calendar periods. Replace by Java built in?
  * @author rocky
  */
 public enum Period {
@@ -32,6 +32,7 @@ public enum Period {
 
      /**
       * HACK - delete me
+      * 
       * @return 
       */
     public double days() {

@@ -38,11 +38,6 @@ public class DataStoreXls extends Task {
 
     private File folder = null;
 
-    /**
-     *
-     * @param records Destination for read records
-     * @param os message printer
-     */
     public DataStoreXls() {
         super();
     }

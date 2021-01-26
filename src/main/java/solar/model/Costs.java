@@ -1,15 +1,25 @@
 package solar.model;
 
 /**
- *
+ * Data only structure to hold financial parameters foe the model.
+ * @threadsafety Immutable
  * @author rocky
  */
 public class Costs {
-    private String name;
-    private double standingCharge;
-    private double importPrice;
-    private double exportPrice;
-    private double fits;
+
+    private final String name;
+    private final double standingCharge;
+    private final double importPrice;
+    private final double exportPrice;
+    private final double fits;
+
+    Costs(String name, double standingCharge, double importPrice, double exportPrice, double fits) {
+        this.name = name;
+        this.standingCharge = standingCharge;
+        this.importPrice = importPrice;
+        this.exportPrice = exportPrice;
+        this.fits = fits;
+    }
 
     /**
      * @return the name
@@ -19,66 +29,30 @@ public class Costs {
     }
 
     /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return the standingCharge
+     * @return the standing charge, £/day
      */
     public double getStandingCharge() {
         return standingCharge;
     }
 
     /**
-     * @param standingCharge the standingCharge to set
-     */
-    public void setStandingCharge(double standingCharge) {
-        this.standingCharge = standingCharge;
-    }
-
-    /**
-     * @return the importPrice
+     * @return the import rate £/kWh
      */
     public double getImportPrice() {
         return importPrice;
     }
 
     /**
-     * @param importPrice the importPrice to set
-     */
-    public void setImportPrice(double importPrice) {
-        this.importPrice = importPrice;
-    }
-
-    /**
-     * @return the exportPrice
+     * @return the export rate £/kWh
      */
     public double getExportPrice() {
         return exportPrice;
     }
 
     /**
-     * @param exportPrice the exportPrice to set
-     */
-    public void setExportPrice(double exportPrice) {
-        this.exportPrice = exportPrice;
-    }
-
-    /**
-     * @return the fits
+     * @return the FITS rate £/kWh
      */
     public double getFits() {
         return fits;
     }
-
-    /**
-     * @param fits the fits to set
-     */
-    public void setFits(double fits) {
-        this.fits = fits;
-    }
-    
 }

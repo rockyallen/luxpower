@@ -16,14 +16,16 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import solar.model.Components;
 import solar.model.DatedValue;
 import solar.model.Listener;
 import solar.model.Record;
 
 /**
- * Common stuff for energy and power graphs. Saves duplication of code. Puts the
- * graph in the centre pane, and a trace selector in the right pane. Subclasses
- * can use the top and bottom panes if they want.
+ * Common stuff for energy and power graphs. Saves duplication of code and makes
+ * sure that they have the same style. Puts the graph in the centre pane, and a
+ * trace selector in the right pane. Subclasses can use the top and bottom panes
+ * if they want.
  *
  * @author rocky
  */
@@ -81,6 +83,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
 
     protected final Map<CheckBox, XYChart.Series> traces = new LinkedHashMap<>();
     protected final Collection<List<DatedValue>> accumulators = new ArrayList<>();
+    protected Components components;
 
     public FxAnalysisBaseTab() {
 
@@ -161,8 +164,9 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     protected abstract void plot();
 
     @Override
-    public void changed(Collection<Record> records, String description) {
+    public void changed(Collection<Record> records, Components componentsList) {
         this.records = records;
+        this.components = componentsList;
         analyse();
         plot();
     }

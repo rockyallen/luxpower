@@ -10,6 +10,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+/**
+ * Graphical main.
+ * 
+ * @author rocky
+ */
 public class FxMainAnalysis extends Application {
 
     // to make it easier to keep common style

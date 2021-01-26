@@ -12,8 +12,10 @@ import javafx.scene.layout.HBox;
 import solar.model.Calculator;
 
 /**
- * Encapsulates a slider and a label to choose a month. The slider runs 1-12 and
- * the label adjusts in tandem. Listen to the monthProperty to get changes.
+ * Encapsulates a slider and a label to choose a month.
+ *
+ * The slider runs 1-12 and the label adjusts in tandem. Listen to the
+ * monthProperty to get changes.
  *
  * @author rocky
  */
@@ -32,8 +34,8 @@ public class FxMonthControl extends HBox {
         slider.setPrefSize(400, 20);
         slider.setSnapToTicks(true);
         slider.setTooltip(new Tooltip("Month 1-12"));
-        monthProperty.set(Math.round((int)slider.getValue()));
-        
+        monthProperty.set(Math.round((int) slider.getValue()));
+
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 monthProperty.setValue(Math.round(new_val.floatValue()));

@@ -15,10 +15,12 @@ import java.util.List;
  * All filter method return a new list (the original list is NEVER changed), but
  * records are added without copying.
  *
- * This is (probably?) not very efficient compared to in-place filtering, but it
+ * @design This is (probably?) not very efficient compared to in-place filtering, but it
  * lets you reuse partial outputs, eg do end-of-day filtering once, then use the
  * result many times to filter into month groups.
  *
+ * @threadsafety Not thread safe
+ * 
  * @author rocky
  */
 public class RecordFilter<E extends DateProvider> {
@@ -26,8 +28,7 @@ public class RecordFilter<E extends DateProvider> {
     private List<E> current = new ArrayList<>();
 
     /**
-     * @param recs MUST be sorted by ascending DataStore.Record.date.
-     * @param recs
+     * @param recs MUST be sorted by ascending Record.date.
      */
     public RecordFilter(Collection<E> recs) {
         current.addAll(recs);

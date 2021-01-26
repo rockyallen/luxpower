@@ -7,19 +7,20 @@ import java.util.Objects;
 import javafx.concurrent.Task;
 
 /**
- *
+ * System model.
+ * 
  * @author rocky
  */
 public class DataStoreModel extends Task {
 
+    // Perfect inverter for comparison
+    // public static final Inverter perfectInverter = Inverter.valueOf("Perfect", "", 100000, 1.0);
+    // Total 9 kWh per day, guessed profile per hour in kW
+    public static final double[] HOURLY_CONSUMPTION = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1.0, 2.8, 1.0, 0.2, 0.2, 0.2, 0.2};
+
     // Include the effect of weather?
     private boolean weather = true;
-    private EnergyStore battery = SystemData.battery;
-    private SolarArray pv1 = SystemData.west;
-    private SolarArray pv2 = SystemData.east;
-    private SolarArray pv3 = SystemData.garage;
-    private Inverter inv12 = SystemData.LuxPower;
-    private Inverter inv3 = SystemData.SunnyBoy;
+    private Components components;
 
     /**
      * Run simulation and convert the outputs into log records as if they had
@@ -41,7 +42,7 @@ public class DataStoreModel extends Task {
         // Asemble components
         for (int month = 0; month < 12; month++) {
             updateMessage("Modelling month " + month);
-            for (int date = 0; date < Calculator.daysPerMonth[month]; date++) {
+            for (int date = 0; date < Calculator.daysPerMonth(month); date++) {
                 // accumulators for each array
                 double pv3DayTotal = 0;
                 double pv2DayTotal = 0;
@@ -55,7 +56,7 @@ public class DataStoreModel extends Task {
                 double stepSize = 0.25;
                 double weatherFactor = 0.0;
                 if (weather) {
-                    weatherFactor = SystemData.sunnyDays[month];
+                    weatherFactor = Calculator.sunnyDays(month);
                 } else {
                     weatherFactor = 1.0;
                 }
@@ -63,10 +64,10 @@ public class DataStoreModel extends Task {
                 for (int solarHour = 0; solarHour < 24; solarHour += 1) {
                     // instantaneous power for each array
                     for (double fraction = 0; fraction < 0.99; fraction += stepSize) { // WRONG?
-                        double pv1Power = pv1.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv2Power = pv2.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv3Power = pv3.availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double generated = inv12.pout(pv1Power + pv2Power) + inv3.pout(pv3Power);
+                        double pv1Power = components.getPv1().availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double pv2Power = components.getPv2().availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double pv3Power = components.getPv3().availablePower(dday, solarHour + fraction) * weatherFactor;
+                        double generated = components.getInv12().pout(pv1Power + pv2Power + pv3Power);
                         // accumulate over day
                         pv1DayTotal += pv1Power * stepSize;
                         pv2DayTotal += pv2Power * stepSize;
@@ -79,14 +80,14 @@ public class DataStoreModel extends Task {
                         double exportPower = 0.0;
                         double pcharge = 0.0;
                         double pdischarge = 0.0;
-                        double consumptionPower = SystemData.HOURLY_CONSUMPTION[solarHour] * 1000;
+                        double consumptionPower = HOURLY_CONSUMPTION[solarHour] * 1000;
 
                         if (generated > consumptionPower) { // excess
                             // user first
                             selfUsePower = consumptionPower;
                             // then battery
                             double powerLeft = generated - selfUsePower;
-                            pcharge = battery.store(powerLeft, stepSize);
+                            pcharge = components.getBattery().store(powerLeft, stepSize);
                             // then export
                             exportPower = powerLeft - pcharge;
                             importPower = 0.0;
@@ -96,7 +97,7 @@ public class DataStoreModel extends Task {
                             // then from battery
                             double powerNeeded = consumptionPower - selfUsePower;
                             //double energyNeeded = powerNeeded * stepSize;
-                            pdischarge = battery.demand(powerNeeded, stepSize);
+                            pdischarge = components.getBattery().demand(powerNeeded, stepSize);
                             //pdischarge = energyTaken / stepSize;
                             importPower = powerNeeded - pdischarge;
                             exportPower = 0.0;
@@ -127,13 +128,13 @@ public class DataStoreModel extends Task {
                         r.seteInvDay((float) inverterDayTotal / 1000);
                         r.seteToUserDay((float) importedTotal / 1000);
                         r.seteToGridDay((float) exportedTotal / 1000);
-                        r.seteChgDay((float) battery.getCharge() / 1000);
-                        r.seteDisChgDay((float) battery.getDischarge() / 1000);
+                        r.seteChgDay((float) components.getBattery().getCharge() / 1000);
+                        r.seteDisChgDay((float) components.getBattery().getDischarge() / 1000);
                         records.add(r);
                     }
                 }
                 dday++;
-                battery.resetLog();
+                components.getBattery().resetLog();
             }
         }
         updateMessage("Records=" + records.size());
@@ -161,51 +162,8 @@ public class DataStoreModel extends Task {
         return "Modelled. Weather " + (weather ? "" : "not") + " included.";
     }
 
-    /**
-     * @param battery the battery to set
-     */
-    public void setBattery(EnergyStore battery) {
-        Objects.nonNull(battery);
-        this.battery = battery;
-    }
-
-    /**
-     * @param pv1 the pv1 to set
-     */
-    public void setPv1(SolarArray pv1) {
-        Objects.nonNull(pv1);
-        this.pv1 = pv1;
-    }
-
-    /**
-     * @param pv2 the pv2 to set
-     */
-    public void setPv2(SolarArray pv2) {
-        Objects.nonNull(pv2);
-        this.pv2 = pv2;
-    }
-
-    /**
-     * @param pv3 the pv3 to set
-     */
-    public void setPv3(SolarArray pv3) {
-        Objects.nonNull(pv3);
-        this.pv3 = pv3;
-    }
-
-    /**
-     * @param inv12 the inv12 to set
-     */
-    public void setInv12(Inverter inv12) {
-        Objects.nonNull(inv12);
-        this.inv12 = inv12;
-    }
-
-    /**
-     * @param inv3 the inv3 to set
-     */
-    public void setInv3(Inverter inv3) {
-        Objects.nonNull(inv3);
-        this.inv3 = inv3;
+    public void setComponents(Components componentsList) {
+        Objects.nonNull(componentsList);
+        this.components = componentsList;
     }
 }

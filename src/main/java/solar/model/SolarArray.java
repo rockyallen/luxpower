@@ -1,7 +1,9 @@
 package solar.model;
 
 /**
- * An array, modelled as a single large panel.
+ * A solar array, modelled as a single large panel.
+ *
+ * @threadsafety Immutable
  *
  * @author rocky
  */
@@ -11,26 +13,35 @@ public class SolarArray {
     /**
      * Sum of area of all modules
      */
-    public final double area;
+    private final double area;
     /**
      * Degrees
      */
-    public final double tilt;
+    private final double tilt;
     /**
      * Degrees
      */
-    public final double azimuth;
+    private final double azimuth;
     /**
      * Module efficiency from data sheet 0-1
      */
-    public final double efficiency;
+    private final double efficiency;
     /**
      * Power under standard illumination. Effectively kWp for the array in Watts
      */
-    public final double power;
-    public final String name;
-    public final String description;
+    private final double power;
+    private final String name;
+    private final String description;
 
+    /**
+     *
+     * @param name
+     * @param description
+     * @param area
+     * @param tilt
+     * @param azimuth
+     * @param efficiency
+     */
     public SolarArray(String name, String description, double area, double tilt, double azimuth, double efficiency) {
         this.name = name;
         this.description = description;
@@ -46,24 +57,30 @@ public class SolarArray {
 
     @Override
     public String toString() {
-        return String.format("Array: '%s' %s power=%4.0f", name, description, power);
+        return String.format("Array: '%s' %s power=%4.0f", name, description, getRatedPower());
     }
 
     /**
-     * The maximum (sunny day) amount of power the array could produce.
+     * The sunny day power of the array.
      *
      * This value must be scaled back to allow for bad weather, then potentially
-     * throttled back by the inverter,
+     * throttled back by the inverter to get the yield.
      *
      * @param dday Year day 0-364
      * @param hour Solar hour
-     * @param array Array to be calculated
      *
      * @return Power Watts
      */
     public double availablePower(int dday, double hour) {
-        double insolation = calc.insSolarRadiation(hour, SystemData.latitude, SystemData.longitude, 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
+        double insolation = calc.insSolarRadiation(hour, Components.getLatitude(), Components.getLongitude(), 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
         return Math.max(0, efficiency * area * insolation);
+    }
+
+    /**
+     * @return the power
+     */
+    public double getRatedPower() {
+        return power;
     }
 
 }

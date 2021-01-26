@@ -1,13 +1,15 @@
 package solar.model;
 
 /**
- * Models a battery specifically, but could be used for any similar energy store. 
- * Efficiency is charging efficiency, discharge efficiency is 100%.
+ * Models a battery specifically, but could be used for any similar energy
+ * store. Efficiency is charging efficiency, discharge efficiency is 100%.
  *
  * Charge and discharge currents are limited.
  *
  * For convenience, it logs the total amount of charge and discharge; this log
  * can be reset without affecting the stored energy.
+ *
+ * @threadsafety Not thread safe
  *
  * @author rocky
  */
@@ -82,7 +84,7 @@ public class EnergyStore {
         double retPower = 0.0;
         // not more than the maximum allowed
         double p1 = Math.min(p, pChargeMax);
-        // Can you accept it all?
+        // Can you store it all?
         double energyOffered = p1 * t;
         double toFill = (getEffectiveCapacity() - getCurrentEnergy()) / efficiency;
         if (toFill > energyOffered) {
@@ -90,7 +92,7 @@ public class EnergyStore {
             currentEnergy += energyOffered * efficiency;
             retPower = p1;
         } else {
-            // No, fill it and limit power
+            // No, top it up and limit power
             retPower = toFill / t;
             currentEnergy = getEffectiveCapacity();
         }
@@ -211,5 +213,10 @@ public class EnergyStore {
      */
     public double getSoc() {
         return currentEnergy / nominalCapacity;
+    }
+
+    @Override
+    public String toString() {
+        return "EnergyStore: " + name + " nominal=" + nominalCapacity + " effective=" + actualCapacity + " charge=" + pChargeMax + " discharge=" + pDischargeMax + " SOC=" + getSoc() * 100 + "%";
     }
 }

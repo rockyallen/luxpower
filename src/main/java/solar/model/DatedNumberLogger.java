@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * This is really a poor man's datBASE. wHY NOT USE A REAL ONE?
+ * This is really a poor man's database. Why not user a real one?
  *
  * @author rocky
  */

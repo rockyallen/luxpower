@@ -11,16 +11,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import solar.model.Components;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
 import solar.model.Listener;
 import solar.model.Period;
 import solar.model.Record;
 import solar.model.RecordFilter;
-import solar.model.SystemData;
-import static solar.model.SystemData.west;
-import static solar.model.SystemData.east;
-import static solar.model.SystemData.garage;
 
 /**
  * End of day energy performance with smoothing.
@@ -76,6 +73,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
         p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
         v.getChildren().add(p);
+
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
@@ -107,23 +105,28 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             totalPv3.add(new DatedValue(r.getDate(), r.getePv3Day()));
             totalCombined.add(new DatedValue(r.getDate(), r.getePv1Day() + r.getePv2Day() + r.getePv3Day()));
 
-            double generated = r.geteInvDay();
+            double inverter = r.geteInvDay();
+            double generated = inverter - r.geteDisChgDay();
             double exported = r.geteToGridDay();
             double selfUse = generated - exported;
             double imported = r.geteToUserDay();
 
             totalInverter.add(new DatedValue(r.getDate(), r.geteInvDay()));
             totalSelfUse.add(new DatedValue(r.getDate(), selfUse));
+            totalGeneration.add(new DatedValue(r.getDate(), generated));
             totalExport.add(new DatedValue(r.getDate(), exported));
             totalImport.add(new DatedValue(r.getDate(), imported));
             totalConsumption.add(new DatedValue(r.getDate(), imported + selfUse));
         }
 
-        final double ratedPower = (garage.power + east.power + west.power) / 1000.0; // kW
-        final double ratedCapacity = ratedPower * 365 * 24; // kW
+        final double ratedPower = (components.getPv1().getRatedPower()
+                + components.getPv2().getRatedPower()
+                + components.getPv3().getRatedPower()); // W
+        final double ratedCapacity = ratedPower * 365 * 24 / 1000.0; // kWh
 
-        double totalGenTotal = new DatedValueFilter(totalInverter).total();
+        double totalGenTotal = new DatedValueFilter(totalGeneration).total();
         double totalSelfUseTotal = new DatedValueFilter(totalSelfUse).total();
+
         yieldBox.setText(String.format("%3.0f kWh", totalGenTotal));
         importBox.setText(String.format("%3.0f kWh", new DatedValueFilter(totalImport).total()));
         exportBox.setText(String.format("%3.0f kWh", new DatedValueFilter(totalExport).total()));
@@ -132,7 +135,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         selfUseRatioBox.setText(String.format("%3.1f%%", 100 * totalSelfUseTotal / totalGenTotal));
         capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGenTotal / ratedCapacity));
 
-        double batteryCapacity = SystemData.battery.getNominalCapacity();
+        double batteryCapacity = components.getBattery().getNominalCapacity();
         double chg = new DatedValueFilter(totalCharge).total();
         double dis = new DatedValueFilter(totalDischarge).total();
         nominalCapacityBox.setText(String.format("%3.1f kWh", batteryCapacity));
@@ -144,7 +147,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             utilisationBox.setText(String.format("%3.1f%%", 100 * mean / batteryCapacity));
             efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
         }
-        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
+        summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, totalGeneration, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge, components);
     }
 
     @Override
@@ -156,6 +159,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         plot(tracePv2, totalPv2, sm);
         plot(tracePv3, totalPv3, sm);
         plot(traceCombined, totalCombined, sm);
+        plot(traceGeneration, totalGeneration, sm);
         plot(traceInverter, totalInverter, sm);
         plot(traceExported, totalExport, sm);
         plot(traceConsumption, totalConsumption, sm);
@@ -185,5 +189,12 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             // + 0.5 to plot in the middle of the period
             trace.getData().add(new XYChart.Data(e.getKey() + 0.5, e.getValue()));
         }
+    }
+
+    /**
+     * @param costs the costs to set
+     */
+    public void setComponents(Components costs) {
+        this.components = costs;
     }
 }
