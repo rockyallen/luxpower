@@ -52,7 +52,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     protected final List<DatedValue> totalPv2 = new ArrayList<>();
     protected final List<DatedValue> totalPv3 = new ArrayList<>();
     protected final List<DatedValue> totalCombined = new ArrayList<>();
-    protected final List<DatedValue> totalGeneration = new ArrayList<>();
+    //protected final List<DatedValue> totalGeneration = new ArrayList<>();
     protected final List<DatedValue> totalInverter = new ArrayList<>();
     protected final List<DatedValue> totalImport = new ArrayList<>();
     protected final List<DatedValue> totalExport = new ArrayList<>();
@@ -66,7 +66,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
     protected final XYChart.Series tracePv2 = new XYChart.Series();
     protected final XYChart.Series tracePv3 = new XYChart.Series();
     protected final XYChart.Series traceCombined = new XYChart.Series();
-    protected final XYChart.Series traceGeneration = new XYChart.Series();
+    //protected final XYChart.Series traceGeneration = new XYChart.Series();
     protected final XYChart.Series traceInverter = new XYChart.Series();
     protected final XYChart.Series traceConsumption = new XYChart.Series();
     protected final XYChart.Series traceExported = new XYChart.Series();
@@ -94,7 +94,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
         configure(traces, "PV2", tracePv2);
         configure(traces, "PV3", tracePv3);
         configure(traces, "Combined", traceCombined);
-        configure(traces, "Generation", traceGeneration);
+        //configure(traces, "Generation", traceGeneration);
         configure(traces, "Inverter", traceInverter);
         configure(traces, "Consumption", traceConsumption);
         configure(traces, "Imported", traceImported);
@@ -107,7 +107,7 @@ public abstract class FxAnalysisBaseTab extends BorderPane implements Listener {
         accumulators.add(totalPv2);
         accumulators.add(totalPv3);
         accumulators.add(totalCombined);
-        accumulators.add(totalGeneration);
+//        accumulators.add(totalGeneration);
         accumulators.add(totalInverter);
         accumulators.add(totalImport);
         accumulators.add(totalExport);

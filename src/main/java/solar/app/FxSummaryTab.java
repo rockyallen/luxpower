@@ -65,7 +65,7 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("= " + description + "\n");
         sb.append("\n");
         sb.append("\n");
-        sb.append("[cols=\"^^^^^^^^^^^^^^^^\", options=\"header\"]\n");
+        sb.append("[cols=\"15^\", options=\"header\"]\n");
         sb.append("|===\n");
         sb.append("|Month");
         sb.append("|PV1 kWh");
@@ -73,7 +73,7 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("|PV3 kWh");
         sb.append("|Combined kWh");
         sb.append("|Yield kWh");
-        sb.append("|Inverter kWh");
+        //sb.append("|Inverter kWh");
         sb.append("|Import kWh");
         sb.append("|Export kWh");
         sb.append("|Consumption kWh");
@@ -101,21 +101,21 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("PV2:: Measured at the output of the array\n");
         sb.append("PV3:: Measured at the output of the array\n");
         sb.append("Combined:: Sum of PV1, PV2 and PV3 at the input to the inverter\n");
-        sb.append("Yield:: Output of PV1, PV2 and PV3 after the inverter\n");
-        sb.append("Inverter:: Measured at the inverter output. **Includes battery discharge**\n");
+        //sb.append("Yield:: Output of PV1, PV2 and PV3 after the inverter\n");
+        sb.append("Yield:: Measured at the inverter output. **Includes battery discharge**\n");
         sb.append("Import:: Import from the grid\n");
         sb.append("Export:: Export to the grid\n");
         sb.append("Consumption:: User loads, calculated\n");
         sb.append("Charge:: Cumulative battery charge per day\n");
         sb.append("Discharge:: Cumulative battery discharge per day\n");
         sb.append("Battery utilisation:: Daily discharge divided by nominal capacity\n");
-        sb.append("Self-use:: Portion of yield that is supplied to the user loads. **Excludes battery discharge**\n");
+        sb.append("Self-use:: Portion of yield that is supplied to the user loads\n");
         sb.append("Self-use fraction:: Self-use divided by yield\n");
         sb.append("Capacity factor:: Yield divided by rated capacity\n");
         sb.append("Bill:: Standing charge + import - export - FITS\n\n");
 
         sb.append("== Additional Terms\n\n");
-        sb.append("Rated power:: Sum of kWp of all arrays whewre kWp is the output measured at 1000 W/m2 sunlight at normal incidence\n");
+        sb.append("Rated power:: Sum of kWp of all arrays where kWp is the output measured at 1000 W/m2 sunlight at normal incidence\n");
         sb.append("Rated capacity:: Annual energy output assuming the system operates at rated power 24/7\n\n");
 
         sb.append("\n\n== Components\n\n");
@@ -139,7 +139,7 @@ public class FxSummaryTab extends FxHtmlTab {
             final double ratedPower = (components.getPv1().getRatedPower() + components.getPv2().getRatedPower() + components.getPv3().getRatedPower()); // W
             final double ratedCapacity = ratedPower * 365 * 24; // Wh
 
-            DatedValueFilter filter = new DatedValueFilter(totalGen);
+            DatedValueFilter filter = new DatedValueFilter(totalInverter);
             filter.period(month, period);
 
             if (filter.size() > 0) {
@@ -156,8 +156,7 @@ public class FxSummaryTab extends FxHtmlTab {
 
                 sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalCombined, month, period))));
 
-                sb.append(String.format("|%3s\n", df.format(totalGenTotal)));
-
+                //sb.append(String.format("|%3s\n", df.format(totalGenTotal)));
                 sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalInverter, month, period))));
 
                 double eImport = totalForPeriod(totalImport, month, period);
@@ -190,10 +189,10 @@ public class FxSummaryTab extends FxHtmlTab {
                 sb.append(String.format("|£%3.2f\n", bill));
 
             } else {
-                sb.append("|-\n|-\n|-\n|-\n")
-                        .append("|-\n|-\n|-\n|-\n")
-                        .append("|-\n|-\n|-\n|-\n")
-                        .append("|-\n|-\n|-\n|-\n\n\n");
+                for (int i = 0; i < 15; i++) {
+                    sb.append("|-\n");
+                }
+                sb.append("\n\n");
             }
         }
     }

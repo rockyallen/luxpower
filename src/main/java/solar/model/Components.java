@@ -22,8 +22,8 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 public class Components {
 
     // Installation location. Should this be part of array?
-    private static final double latitude = 50.6; // degrees google maps
-    private static final double longitude = -2.5; // degrees google maps
+    private static final double defaultLatitude = 50.6; // degrees google maps
+    private static final double defaultLongitude = -2.5; // degrees google maps
 
     private final Map<String, Inverter> inverters = new TreeMap<>();
     private final Map<String, EnergyStore> batteries = new TreeMap<>();
@@ -33,12 +33,12 @@ public class Components {
     // Array of 10 JAM60S10 340/MR on house East and West
     // House angle measured from google maps as 2.0 degrees
     // Tilt estimated from H2 ECO site visit
-    private SolarArray pv1 = new SolarArray("West", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 92.0, 20.0 / 100);
-    private SolarArray pv2 = new SolarArray("East", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 272.0, 20.0 / 100);
+    private SolarArray pv1 = new SolarArray("West", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 92.0, 20.0 / 100, defaultLatitude, defaultLongitude);
+    private SolarArray pv2 = new SolarArray("East", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 272.0, 20.0 / 100,  defaultLatitude, defaultLongitude);
     // Array of 9 PV-TD185MF5 on garage
     // Angle measured from google maps as 2.0 degrees
     // Tilt from memory of design
-    private SolarArray pv3 = new SolarArray("South", "9 off 185 W", 9 * 1.65 * 0.83, 35.0, 2.0, 13.4 / 100);
+    private SolarArray pv3 = new SolarArray("South", "9 off 185 W", 9 * 1.65 * 0.83, 35.0, 2.0, 13.4 / 100,  defaultLatitude, defaultLongitude);
     private Inverter inv12 = Inverter.valueOf("LUX Power", "", 3600.0, 0.96);
     //private Inverter inv3 = Components.SunnyBoy;
     // Jan 2021, Octopus
@@ -111,7 +111,9 @@ public class Components {
                                         row.getCell(2).getNumericCellValue(),
                                         row.getCell(3).getNumericCellValue(),
                                         row.getCell(4).getNumericCellValue(),
-                                        row.getCell(5).getNumericCellValue()
+                                        row.getCell(5).getNumericCellValue(),
+                                        row.getCell(6).getNumericCellValue(),
+                                        row.getCell(7).getNumericCellValue()
                                 ));
                     }
                 }
@@ -248,19 +250,5 @@ public class Components {
      */
     public void setBattery(EnergyStore battery) {
         this.battery = battery;
-    }
-
-    /**
-     * @return the latitude
-     */
-    public static double getLatitude() {
-        return latitude;
-    }
-
-    /**
-     * @return the longitude
-     */
-    public static double getLongitude() {
-        return longitude;
     }
 }

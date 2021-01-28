@@ -10,6 +10,8 @@ package solar.model;
 public class SolarArray {
 
     private static Calculator calc = new Calculator();
+    private final double latitude;
+    private final double longitude;
     /**
      * Sum of area of all modules
      */
@@ -42,17 +44,19 @@ public class SolarArray {
      * @param azimuth
      * @param efficiency
      */
-    public SolarArray(String name, String description, double area, double tilt, double azimuth, double efficiency) {
+    public SolarArray(String name, String description, double area, double tilt, double azimuth, double efficiency, double latitude, double longitude) {
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
         this.name = name;
         this.description = description;
         this.area = area;
         this.tilt = tilt;
         this.azimuth = azimuth;
         this.efficiency = efficiency;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.power = area * efficiency * 1000.0;
-        if ("".equals(name)) {
-            throw new IllegalArgumentException("name must not be blank");
-        }
     }
 
     @Override
@@ -72,7 +76,7 @@ public class SolarArray {
      * @return Power Watts
      */
     public double availablePower(int dday, double hour) {
-        double insolation = calc.insSolarRadiation(hour, Components.getLatitude(), Components.getLongitude(), 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
+        double insolation = calc.insSolarRadiation(hour, latitude, longitude, 0, tilt, azimuth, dday, Calculator.CN, Calculator.SURFACE_REFLECTIVITY);
         return Math.max(0, efficiency * area * insolation);
     }
 

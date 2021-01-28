@@ -129,11 +129,26 @@ public class DataStoreXls extends Task {
                         record.seteToGridDay(Float.valueOf(row.getCell(37).getStringCellValue()));
                         record.seteToUserDay(Float.valueOf(row.getCell(38).getStringCellValue()));
 
+//To represent this, if "Model PV3" is selected when you import the data:
+//
+//- *Ppv3* is calculated as 27% of **Ppv1 + Ppv2**
+//
+//- *epv3day* is calculated as 27% of **epv1day + epv2day**
+//
+//- *PInv* is increased by *Ppv3*
+//
+//- *eInvday* is increased by 27%
+//
+//- *Pload* is recalculated as **Pinv + PToSser - PToGrid**
+
                         if (isFudge()) {
-                            record.setPpv3(0.27f * (record.getPpv1() + record.getPpv2()));
-                            float e3 = 0.27f * (record.getePv1Day() + record.getePv2Day());
-                            record.setePv3Day(e3);
-                            record.seteInvDay(record.geteInvDay() + e3);
+                            final float factor = 0.27f;
+                            record.setPpv3(factor * (record.getPpv1() + record.getPpv2()));
+                            float epv3 = factor * (record.getePv1Day() + record.getePv2Day());
+                            record.setePv3Day(epv3);
+                            record.setPinv(record.getPinv() + epv3);
+                            record.seteInvDay((1 + factor) * record.geteInvDay());
+                            record.setpLoad(record.getPinv() + record.getpToUser() - record.getpToGrid());
                         }
                         record.validate();
                         records.add(record);

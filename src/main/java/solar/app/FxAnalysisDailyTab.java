@@ -106,29 +106,19 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
                 totalPv2.add(new DatedValue(r.getDate(), r.getPpv2()));
                 totalPv3.add(new DatedValue(r.getDate(), r.getPpv3()));
                 totalCombined.add(new DatedValue(r.getDate(), r.getPpv1() + r.getPpv2() + r.getPpv3()));
-
-                double generated = r.getPinv() - r.getpDisCharge();
-                double exported = r.getpToGrid();
-                double imported = r.getpToUser();
-                double charge = r.getpCharge();
-                double disCharge = r.getpDisCharge();
-                double selfUse = generated - exported - charge;
-                double consumption = imported + selfUse + disCharge;
-
-                totalGeneration.add(new DatedValue(r.getDate(), generated));
                 totalInverter.add(new DatedValue(r.getDate(), r.getPinv()));
-                totalSelfUse.add(new DatedValue(r.getDate(), selfUse));
-                totalExport.add(new DatedValue(r.getDate(), exported));
-                totalImport.add(new DatedValue(r.getDate(), imported));
-                totalConsumption.add(new DatedValue(r.getDate(), consumption));
-                totalCharge.add(new DatedValue(r.getDate(), charge));
+                totalSelfUse.add(new DatedValue(r.getDate(), r.getpLoad() - r.getpToUser()));
+                totalExport.add(new DatedValue(r.getDate(), r.getpToGrid()));
+                totalImport.add(new DatedValue(r.getDate(), r.getpToUser()));
+                totalConsumption.add(new DatedValue(r.getDate(), r.getpLoad()));
+                totalCharge.add(new DatedValue(r.getDate(), r.getpCharge()));
                 totalDischarge.add(new DatedValue(r.getDate(), r.getpDisCharge()));
             }
             addPoint(tracePv1, totalPv1, hour, 0.001);
             addPoint(tracePv2, totalPv2, hour, 0.001);
             addPoint(tracePv3, totalPv3, hour, 0.001);
             addPoint(traceCombined, totalCombined, hour, 0.001);
-            addPoint(traceGeneration, totalGeneration, hour, 0.001);
+            //addPoint(traceGeneration, totalGeneration, hour, 0.001);
             addPoint(traceInverter, totalInverter, hour, 0.001);
             addPoint(traceExported, totalExport, hour, 0.001);
             addPoint(traceImported, totalImport, hour, 0.001);

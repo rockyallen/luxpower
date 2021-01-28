@@ -8,7 +8,7 @@ import javafx.concurrent.Task;
 
 /**
  * System model.
- * 
+ *
  * @author rocky
  */
 public class DataStoreModel extends Task {
@@ -16,7 +16,7 @@ public class DataStoreModel extends Task {
     // Perfect inverter for comparison
     // public static final Inverter perfectInverter = Inverter.valueOf("Perfect", "", 100000, 1.0);
     // Total 9 kWh per day, guessed profile per hour in kW
-    public static final double[] HOURLY_CONSUMPTION = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 1.0, 2.8, 1.0, 0.2, 0.2, 0.2, 0.2};
+    public static final float[] HOURLY_CONSUMPTION = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 1.0f, 2.8f, 1.0f, 0.2f, 0.2f, 0.2f, 0.2f};
 
     // Include the effect of weather?
     private boolean weather = true;
@@ -44,90 +44,93 @@ public class DataStoreModel extends Task {
             updateMessage("Modelling month " + month);
             for (int date = 0; date < Calculator.daysPerMonth(month); date++) {
                 // accumulators for each array
-                double pv3DayTotal = 0;
-                double pv2DayTotal = 0;
-                double pv1DayTotal = 0;
+                float pv3DayTotal = 0;
+                float pv2DayTotal = 0;
+                float pv1DayTotal = 0;
                 // accumulator for inverter output
-                double inverterDayTotal = 0;
-                double importedTotal = 0;
-                double exportedTotal = 0;
-                double generatedDayTotal = 0;
+                float inverterDayTotal = 0;
+                float importedTotal = 0;
+                float exportedTotal = 0;
+                //float generatedDayTotal = 0;
                 // time resolution, hours
-                double stepSize = 0.25;
-                double weatherFactor = 0.0;
+                float stepSize = 0.25f;
+                float weatherFactor = 0.0f;
                 if (weather) {
-                    weatherFactor = Calculator.sunnyDays(month);
+                    weatherFactor = (float) Calculator.sunnyDays(month);
                 } else {
-                    weatherFactor = 1.0;
+                    weatherFactor = 1.0f;
                 }
 
                 for (int solarHour = 0; solarHour < 24; solarHour += 1) {
                     // instantaneous power for each array
-                    for (double fraction = 0; fraction < 0.99; fraction += stepSize) { // WRONG?
-                        double pv1Power = components.getPv1().availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv2Power = components.getPv2().availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double pv3Power = components.getPv3().availablePower(dday, solarHour + fraction) * weatherFactor;
-                        double generated = components.getInv12().pout(pv1Power + pv2Power + pv3Power);
+                    for (float fraction = 0; fraction < 0.99; fraction += stepSize) { // WRONG?
+                        float pv1Power = (float) components.getPv1().availablePower(dday, solarHour + fraction) * weatherFactor;
+                        float pv2Power = (float) components.getPv2().availablePower(dday, solarHour + fraction) * weatherFactor;
+                        float pv3Power = (float) components.getPv3().availablePower(dday, solarHour + fraction) * weatherFactor;
                         // accumulate over day
                         pv1DayTotal += pv1Power * stepSize;
                         pv2DayTotal += pv2Power * stepSize;
                         pv3DayTotal += pv3Power * stepSize;
-                        generatedDayTotal += generated * stepSize;
 
-                        // construct and write record
-                        double selfUsePower = 0.0;
-                        double importPower = 0.0;
-                        double exportPower = 0.0;
-                        double pcharge = 0.0;
-                        double pdischarge = 0.0;
-                        double consumptionPower = HOURLY_CONSUMPTION[solarHour] * 1000;
+                        float selfUsePower = 0.0f;
+                        float importPower = 0.0f;
+                        float exportPower = 0.0f;
+                        float pcharge = 0.0f;
+                        float pdischarge = 0.0f;
+                        float inverterOutputPower = 0.0f;
 
-                        if (generated > consumptionPower) { // excess
+                        float maxAvailableWithoutBattery = (float) (components.getInv12().pout(pv1Power + pv2Power) + components.getInv12().pout(pv3Power));
+
+                        float consumptionPower = HOURLY_CONSUMPTION[solarHour] * 1000;
+
+                        if (maxAvailableWithoutBattery > consumptionPower) { // excess
                             // user first
                             selfUsePower = consumptionPower;
                             // then battery
-                            double powerLeft = generated - selfUsePower;
-                            pcharge = components.getBattery().store(powerLeft, stepSize);
+                            float powerLeft = maxAvailableWithoutBattery - selfUsePower;
+                            pcharge = (float) components.getBattery().store(powerLeft, stepSize);
+                            pdischarge = 0.0f;
                             // then export
                             exportPower = powerLeft - pcharge;
-                            importPower = 0.0;
+                            importPower = 0.0f;
+                            inverterOutputPower = consumptionPower + exportPower - importPower;
                         } else { // deficit
                             // user first
-                            selfUsePower = generated;
+                            selfUsePower = maxAvailableWithoutBattery;
                             // then from battery
-                            double powerNeeded = consumptionPower - selfUsePower;
-                            //double energyNeeded = powerNeeded * stepSize;
-                            pdischarge = components.getBattery().demand(powerNeeded, stepSize);
-                            //pdischarge = energyTaken / stepSize;
+                            float powerNeeded = consumptionPower - selfUsePower;
+                            //float energyNeeded = powerNeeded * stepSize;
+                            pdischarge = (float) components.getBattery().demand(powerNeeded, stepSize);
+                            pcharge = 0.0f;
                             importPower = powerNeeded - pdischarge;
-                            exportPower = 0.0;
+                            exportPower = 0.0f;
+                            inverterOutputPower = consumptionPower + exportPower - importPower;
                         }
-                        double inverterArrayPower = generated + pdischarge;
                         importedTotal += importPower * stepSize;
                         exportedTotal += exportPower * stepSize;
-                        inverterDayTotal += inverterArrayPower * stepSize;
-                        generatedDayTotal += generated * stepSize;
+                        inverterDayTotal += inverterOutputPower * stepSize;
 
                         Record r = new Record();
                         Date d = new Date(100, month, date);
                         d.setHours(solarHour);
                         d.setMinutes((int) (60 * fraction));
                         r.setDate(d);
-                        r.setPpv1((float) pv1Power);
-                        r.setPpv2((float) pv2Power);
-                        r.setPpv3((float) pv3Power);
-                        r.setPinv((float) (inverterArrayPower));
-                        r.setpToGrid((float) exportPower);
-                        r.setpToUser((float) importPower);
-                        r.setpCharge((float) pcharge);
-                        r.setpDisCharge((float) pdischarge);
+                        r.setPpv1(pv1Power);
+                        r.setPpv2(pv2Power);
+                        r.setPpv3(pv3Power);
+                        r.setPinv((inverterOutputPower));
+                        r.setpToGrid(exportPower);
+                        r.setpToUser(importPower);
+                        r.setpCharge(pcharge);
+                        r.setpDisCharge(pdischarge);
+                        r.setpLoad((consumptionPower));
 
-                        r.setePv1Day((float) pv1DayTotal / 1000);
-                        r.setePv2Day((float) pv2DayTotal / 1000);
-                        r.setePv3Day((float) pv3DayTotal / 1000);
-                        r.seteInvDay((float) inverterDayTotal / 1000);
-                        r.seteToUserDay((float) importedTotal / 1000);
-                        r.seteToGridDay((float) exportedTotal / 1000);
+                        r.setePv1Day(pv1DayTotal / 1000);
+                        r.setePv2Day(pv2DayTotal / 1000);
+                        r.setePv3Day(pv3DayTotal / 1000);
+                        r.seteInvDay(inverterDayTotal / 1000);
+                        r.seteToUserDay(importedTotal / 1000);
+                        r.seteToGridDay(exportedTotal / 1000);
                         r.seteChgDay((float) components.getBattery().getCharge() / 1000);
                         r.seteDisChgDay((float) components.getBattery().getDischarge() / 1000);
                         records.add(r);

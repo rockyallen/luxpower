@@ -1,13 +1,15 @@
 :experimental:
-
+:data-uri:
+:imagesdir:
 = Solar PV Analysis and Modelling Tool
 
 == Introduction
 
-Analysis reads the .XLS files produced by Lux Power and graphs the power and energy from the system through the day and year.
-The modelling uses standard formulae to predict the same from the system description.
+Analysis reads the .XLS files produced by the Lux Power export, and graphs the power and energy from the system through the day and year.
 
-In both cases, it calculates the following measures of performance:
+Modelling uses standard formulae to predict the same from the system description.
+
+In both cases, the tool calculates the following measures of performance:
 
 Capacity factor:: 
 Actual energy produced divided by the rated capacity. 
@@ -26,10 +28,6 @@ Theoretically it can be more than 100%, but 30% is typical.
 Battery efficiency::
 Discharge energy divided by the charge energy for a particular period. 
 This is also known as the round-trip efficiency. 90% is good.
-
-The main use of the modelling is to compare different configurations to optimise placement, inverter choice etc. 
-You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
-
 
 == Viewing downloaded data
 
@@ -51,7 +49,92 @@ Put each year's data in a separate folder: the tool can only display 1 year at a
 You only need to use btn:[Import] the first time you use the app, or if you have changed any files to the data folder.
 Otherwise use btn:[Cache] which will load much faster.
 
+=== Interpretation of data file column headings
+
+I had to make some assumptions about the data fields in the file, since I can't find any documentation.
+See xref:fig-headings[].
+
+[[fig-headings]]
+.Interpretation of data file column headings
+[ditaa]
+....
+ +----------+   +-----------+   +-----------+  
+ |   PV 1   |   |   PV 2    |   |    PV 3   |
+ |          |   |           |   |           |
+ |          |   |           |   |           |
+ +----------+   +-----------+   +-----------+
+       |Ppv1          |Ppv2           |Ppv3       
+       +--------------+---------------+
+                      |               
+                      v               
+                +-----------+                   +-----------+  
+    pDisCharge  | Inverter  |Pinv        Pload  |    Load   |
+       +------->|           |---------+-------->|           |  
+       |        |           |         |         |           |  
+       |        +-----------+         |         +-----------+  
+       |              |               |pToGrid        ^pToUser
+       |              |pCharge        |               |
+ +-----------+        |               |         +-----------+  
+ |  Battery  |        |               |         |    Grid   |
+ |           |<-------+               +-------->|           |  
+ |           |                                  |           |  
+ +-----------+                                  +-----------+  
+....
+
+The inverter can measure everything directly except for *Pload*, so I assume it is calculated from **Pinv + PToUser - PToGrid**.
+
+In my setup, PV 3 is attached to a separate inverter and connected as xref:fig-headingsmodelled[].
+
+
+[[fig-headingsmodelled]]
+.Modified connections
+[ditaa]
+....
+ +----------+   +-----------+   +-----------+      +-----------+  
+ |   PV 1   |   |   PV 2    |   |    Inv3   | Ppv3 |    PV 3   |
+ |          |   |           |   |           |<-----|           |  
+ |          |   |           |   |           |      |           |  
+ +----------+   +-----------+   +-----------+      +-----------+  
+       |Ppv1          |Ppv2           |Pinv3       
+       +--------------+               |
+                      |               |
+                      v               |
+                +-----------+         |         +-----------+  
+    pDisCharge  | Inverter  |Pinv     v  Pload  |    Load   |
+       +------->|           |---------+-------->|           |  
+       |        |           |         |         |           |  
+       |        +-----------+         |         +-----------+  
+       |              |               |pToGrid        ^pToUser
+       |              |pCharge        |               |
+ +-----------+        |               |         +-----------+  
+ |  Battery  |        |               |         |    Grid   |
+ |           |<-------+               +-------->|           |  
+ |           |                                  |           |  
+ +-----------+                                  +-----------+  
+....
+
+To represent this, if **Estimate PV3** is selected when you import the data:
+
+- *Ppv3* is calculated as 27% of **Ppv1 + Ppv2**
+
+- *epv3day* is calculated as 27% of **epv1day + epv2day**
+
+- *PInv* is increased by *Ppv3*
+
+- *eInvday* is increased by 27%
+
+- *Pload* is recalculated as **Pinv + PToUser - PToGrid**
+
+If you only have the single inverter, leave **Estimate PV3** unselected.
+
 == Modelling
+
+The main use of the modelling is to compare different configurations to optimise placement, inverter choice etc. 
+You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
+
+The default configuration matches my particular setup. 
+If yours is different or you wish to experiment, edit the file "components.xls" following the examples.
+This file is read at startup and used to populate the dropdowns on the modelling tab.
 
 . If necessary, edit the file "components.xls" in the app folder.
 
@@ -65,6 +148,4 @@ Otherwise use btn:[Cache] which will load much faster.
 
 . Use the Month sliders to scroll through the year a month at a time.
 
-. To change the model, exit the app, edit "components.xls" and restart the app. (Should I add a reload button?)
-
-
+. To model a different configuration, choose different components and press btn:[Model] again.
