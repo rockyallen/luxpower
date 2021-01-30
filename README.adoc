@@ -7,7 +7,7 @@
 
 Analysis reads the .XLS files produced by the Lux Power export, and graphs the power and energy from the system through the day and year.
 
-Modelling uses standard formulae to predict the same from the system description.
+Modelling uses standard equations to predict the same from the system description (https://www.pveducation.org/pvcdrom/properties-of-sunlight/calculation-of-solar-insolation).
 
 In both cases, the tool calculates the following measures of performance:
 

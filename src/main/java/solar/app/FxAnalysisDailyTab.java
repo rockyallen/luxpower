@@ -151,4 +151,10 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             trace.getData().add(new XYChart.Data(hour + 0.5, mean * scale));
         }
     }
+
+    @Override
+    public String toString()
+{
+    return "Daily power tab";
+}
 }

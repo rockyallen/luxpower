@@ -21,6 +21,7 @@ public class DataStoreModel extends Task {
     // Include the effect of weather?
     private boolean weather = true;
     private Components components;
+    private final Calculator calculator= new Calculator();
 
     /**
      * Run simulation and convert the outputs into log records as if they had
@@ -42,7 +43,7 @@ public class DataStoreModel extends Task {
         // Asemble components
         for (int month = 0; month < 12; month++) {
             updateMessage("Modelling month " + month);
-            for (int date = 0; date < Calculator.daysPerMonth(month); date++) {
+            for (int date = 0; date < calculator.daysPerMonth(month); date++) {
                 // accumulators for each array
                 float pv3DayTotal = 0;
                 float pv2DayTotal = 0;
@@ -56,7 +57,7 @@ public class DataStoreModel extends Task {
                 float stepSize = 0.25f;
                 float weatherFactor = 0.0f;
                 if (weather) {
-                    weatherFactor = (float) Calculator.sunnyDays(month);
+                    weatherFactor = (float) calculator.getWeatherFactor(Calculator.dayNumber(month, date));
                 } else {
                     weatherFactor = 1.0f;
                 }

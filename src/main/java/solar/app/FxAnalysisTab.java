@@ -107,7 +107,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
 
             // there is a problem because load is only recorded as a power, not an energy.
             // have to reconstruct it
-            double eload = r.geteInvDay()+r.geteToUserDay()-r.geteToGridDay();
+            double eload = r.geteInvDay() + r.geteToUserDay() - r.geteToGridDay();
 
             totalInverter.add(new DatedValue(r.getDate(), r.geteInvDay()));
             totalSelfUse.add(new DatedValue(r.getDate(), eload - r.geteToUserDay()));
@@ -116,8 +116,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
             totalConsumption.add(new DatedValue(r.getDate(), eload));
         }
 
-        final double ratedPower = (
-                components.getPv1().getRatedPower()
+        final double ratedPower = (components.getPv1().getRatedPower()
                 + components.getPv2().getRatedPower()
                 + components.getPv3().getRatedPower()); // W
         final double ratedCapacity = ratedPower * 365 * 24 / 1000.0; // kWh
@@ -136,13 +135,13 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         double batteryCapacity = components.getBattery().getNominalCapacity();
         double chg = new DatedValueFilter(totalCharge).total();
         double dis = new DatedValueFilter(totalDischarge).total();
-        nominalCapacityBox.setText(String.format("%3.1f kWh", batteryCapacity/1000.0));
+        nominalCapacityBox.setText(String.format("%3.1f kWh", batteryCapacity / 1000.0));
         chargeBox.setText(String.format("%3.1f kWh", chg));
         dischargeBox.setText(String.format("%3.1f kWh", dis));
         if (records.size() > 0) {
             double mean = dis / totalDischarge.size();
             dailyBox.setText(String.format("%3.1f kWh", mean));
-            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / (batteryCapacity/1000.0)));
+            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / (batteryCapacity / 1000.0)));
             efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
         }
         summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, null, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge, components);
@@ -195,4 +194,10 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
     public void setComponents(Components costs) {
         this.components = costs;
     }
+
+    @Override
+    public String toString() {
+        return "Annual Energy";
+    }
+
 }

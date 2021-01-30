@@ -28,6 +28,8 @@ public class FxSummaryTab extends FxHtmlTab {
     private Collection<Record> records;
     private String description;
     private Components components;
+    private double ratedPower; // W
+    private double ratedCapacity; // Wh
 
     RadioButton rb1 = new RadioButton("Total");
     RadioButton rb2 = new RadioButton("Daily mean");
@@ -60,12 +62,14 @@ public class FxSummaryTab extends FxHtmlTab {
     void populate(List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalCombined, List<DatedValue> totalGen, List<DatedValue> totalInverter, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption, List<DatedValue> totalCharge, List<DatedValue> totalDischarge, Components components) {
 
         this.components = components;
+
+        ratedPower = (components.getPv1().getRatedPower() + components.getPv2().getRatedPower() + components.getPv3().getRatedPower()); // W
+        ratedCapacity = ratedPower * 365 * 24; // Wh
+
         StringBuilder sb = new StringBuilder();
 
-        sb.append("= " + description + "\n");
-        sb.append("\n");
-        sb.append("\n");
-        sb.append("[cols=\"15^\", options=\"header\"]\n");
+        sb.append("\n= Summary\n\n");
+        sb.append("[cols=\"16*^\", options=\"header\"]\n");
         sb.append("|===\n");
         sb.append("|Month");
         sb.append("|PV1 kWh");
@@ -73,7 +77,6 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("|PV3 kWh");
         sb.append("|Combined kWh");
         sb.append("|Yield kWh");
-        //sb.append("|Inverter kWh");
         sb.append("|Import kWh");
         sb.append("|Export kWh");
         sb.append("|Consumption kWh");
@@ -96,12 +99,15 @@ public class FxSummaryTab extends FxHtmlTab {
 
         sb.append("|===\n");
 
+        sb.append(String.format("Rated power: %3.1f kW\n\n", ratedPower / 1000.0));
+        sb.append(String.format("Rated capacity: %3.1f kWh\n", ratedCapacity / 1000.0));
+
         sb.append("\n\n== Columns\n\n");
+
         sb.append("PV1:: Measured at the output of the array\n");
         sb.append("PV2:: Measured at the output of the array\n");
         sb.append("PV3:: Measured at the output of the array\n");
         sb.append("Combined:: Sum of PV1, PV2 and PV3 at the input to the inverter\n");
-        //sb.append("Yield:: Output of PV1, PV2 and PV3 after the inverter\n");
         sb.append("Yield:: Measured at the inverter output. **Includes battery discharge**\n");
         sb.append("Import:: Import from the grid\n");
         sb.append("Export:: Export to the grid\n");
@@ -134,52 +140,52 @@ public class FxSummaryTab extends FxHtmlTab {
         setText(html);
     }
 
-    private void doRow(StringBuilder sb, int month, Period period, List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalCombined, List<DatedValue> totalGen, List<DatedValue> totalInverter, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption, List<DatedValue> totalCharge, List<DatedValue> totalDischarge) {
+    private void doRow(StringBuilder sb, int periodNumber, Period period, List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalCombined, List<DatedValue> totalGen, List<DatedValue> totalInverter, List<DatedValue> totalSelfUse, List<DatedValue> totalExport, List<DatedValue> totalImport, List<DatedValue> totalConsumption, List<DatedValue> totalCharge, List<DatedValue> totalDischarge) {
         {
-            final double ratedPower = (components.getPv1().getRatedPower() + components.getPv2().getRatedPower() + components.getPv3().getRatedPower()); // W
-            final double ratedCapacity = ratedPower * 365 * 24; // Wh
 
             DatedValueFilter filter = new DatedValueFilter(totalInverter);
-            filter.period(month, period);
+            filter.period(periodNumber, period);
 
             if (filter.size() > 0) {
                 DecimalFormat df = new DecimalFormat("#,###");
 
-                double totalGenTotal = filter.total();
+                double totalGenTotal = filter.total(); // kWh
 
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(pv1, month, period))));
+                sb.append(String.format("^|%3s\n", df.format(totalForPeriod(pv1, periodNumber, period))));
 
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(pv2, month, period))));
+                sb.append(String.format("^|%3s\n", df.format(totalForPeriod(pv2, periodNumber, period))));
 
-                double epv3 = totalForPeriod(pv3, month, period);
-                sb.append(String.format("|%3s\n", df.format(epv3)));
+                double epv3 = totalForPeriod(pv3, periodNumber, period);
+                sb.append(String.format("^|%3s\n", df.format(epv3)));
 
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalCombined, month, period))));
+                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalCombined, periodNumber, period))));
 
-                //sb.append(String.format("|%3s\n", df.format(totalGenTotal)));
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalInverter, month, period))));
+                double eInverter = totalForPeriod(totalInverter, periodNumber, period);
+                sb.append(String.format("|%3s\n", df.format(eInverter)));
 
-                double eImport = totalForPeriod(totalImport, month, period);
+                double eImport = totalForPeriod(totalImport, periodNumber, period);
                 sb.append(String.format("|%3s\n", df.format(eImport)));
 
-                double eExport = totalForPeriod(totalExport, month, period);
+                double eExport = totalForPeriod(totalExport, periodNumber, period);
                 sb.append(String.format("|%3s\n", df.format(eExport)));
 
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalConsumption, month, period))));
+                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalConsumption, periodNumber, period))));
 
-                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalCharge, month, period))));
+                sb.append(String.format("|%3s\n", df.format(totalForPeriod(totalCharge, periodNumber, period))));
 
-                double eDischarge = totalForPeriod(totalDischarge, month, period);
+                double eDischarge = totalForPeriod(totalDischarge, periodNumber, period);
                 sb.append(String.format("|%3s\n", df.format(eDischarge)));
 
-                sb.append(String.format("|%3.1f%%\n", 100 * eDischarge / (components.getBattery().getNominalCapacity() / 12.0)));
+                // annualise it
+                double annualMultiplier = 365.0 / period.days();
+                sb.append(String.format("|%3.1f%%\n", 100 * annualMultiplier * eDischarge / (components.getBattery().getNominalCapacity())));
 
-                double eSelfUse = totalForPeriod(totalSelfUse, month, period);
+                double eSelfUse = totalForPeriod(totalSelfUse, periodNumber, period); // kWh
                 sb.append(String.format("|%3s\n", df.format(eSelfUse)));
 
-                sb.append(String.format("|%3.1f%%\n", 100 * eSelfUse / totalGenTotal));
+                sb.append(String.format("|%3.1f%%\n", 100 * eSelfUse / eInverter));
 
-                sb.append(String.format("|%3.1f%%\n", 100 * totalGenTotal / (ratedCapacity / 1000.0)));
+                sb.append(String.format("|%3.1f%%\n", 100 * annualMultiplier * totalGenTotal / (ratedCapacity / 1000.0)));
 
                 double bill
                         = components.getCost().getStandingCharge() * period.days()
@@ -201,5 +207,10 @@ public class FxSummaryTab extends FxHtmlTab {
         DatedValueFilter filter = new DatedValueFilter(dv);
         filter.period(i, period);
         return filter.total();
+    }
+
+    @Override
+    public String toString() {
+        return "Monthly summary";
     }
 }

@@ -217,6 +217,6 @@ public class EnergyStore {
 
     @Override
     public String toString() {
-        return "EnergyStore: " + name + " nominal=" + nominalCapacity + " effective=" + actualCapacity + " charge=" + pChargeMax + " discharge=" + pDischargeMax + " SOC=" + getSoc() * 100 + "%";
+        return "EnergyStore: name='" + name + "' nominal=" + nominalCapacity + " effective=" + actualCapacity + " charge=" + pChargeMax + " discharge=" + pDischargeMax + " SOC=" + getSoc() * 100 + "%";
     }
 }

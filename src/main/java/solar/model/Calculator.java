@@ -6,8 +6,6 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 /**
  * Solar irradiance sums.
  *
- * Pinched this from GitHub. Sums have no provenance.
- *
  * @threadsafety Immutable
  */
 public class Calculator {
@@ -17,16 +15,10 @@ public class Calculator {
     public static final double daysPerYear = 365.0;
     private static final String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-    // Sunny day fractions by month. See Excel
-    // Treat them as a constant value for the month? Or a random number with the specified mean?
-    // Use triangular: https://en.wikipedia.org/wiki/Triangular_distribution 
-    // https://commons.apache.org/proper/commons-math/javadocs/api-3.5/org/apache/commons/math3/distribution/TriangularDistribution.html
-    // no-not triangular because its mean is between 1/3 and 2/3
-    private static final double[] sunnyDays = {0.27, 0.31, 0.37, 0.48, 0.49, 0.47, 0.47, 0.47, 0.41, 0.34, 0.31, 0.25};
 
-    public static final double sunnyDays(int month) {
-        return sunnyDays[month];
-    }
+//    public static final double sunnyDays(int month) {
+//        return sunnyDays[month];
+//    }
 
     /**
      * Sensible default values?
@@ -51,6 +43,14 @@ public class Calculator {
             = {0.057, 0.058, 0.060, 0.071, 0.097, 0.121, 0.134, 0.136, 0.122, 0.092, 0.073, 0.063, 0.057, 0.058};
     private static final double[] attmosphericAttenuations
             = {0.142, 0.142, 0.144, 0.156, 0.180, 0.196, 0.205, 0.207, 0.201, 0.177, 0.160, 0.149, 0.142, 0.142};
+    // Sunny day fractions by month. See Excel
+    // Treat them as a constant value for the month? Or a random number with the specified mean?
+    // Use triangular: https://en.wikipedia.org/wiki/Triangular_distribution 
+    // https://commons.apache.org/proper/commons-math/javadocs/api-3.5/org/apache/commons/math3/distribution/TriangularDistribution.html
+    // no-not triangular because its mean is between 1/3 and 2/3
+    //private static final double[] sunnyDays = {0.27, 0.31, 0.37, 0.48, 0.49, 0.47, 0.47, 0.47, 0.41, 0.34, 0.31, 0.25};
+    private static final double[] sunnyDayFactors
+            = {0.26, 0.27, 0.31, 0.37, 0.48, 0.49, 0.47, 0.47, 0.47, 0.41, 0.34, 0.31, 0.25, 0.26};
     /**
      * Calendar data. TODO: Remove. Use Date?
      */
@@ -61,21 +61,27 @@ public class Calculator {
 
     private static PolynomialSplineFunction attenuation;
     private static PolynomialSplineFunction diffusion;
+    private static PolynomialSplineFunction weather;
 
     public Calculator() {
         LinearInterpolator li = new LinearInterpolator();
         attenuation = li.interpolate(months, attmosphericAttenuations);
         diffusion = li.interpolate(months, skyDiffusionFactors);
+        weather = li.interpolate(months, sunnyDayFactors);
     }
 
     public double getAttenuation(int yearDay) {
-        return attenuation.value(yearDay / 31.0);
+        return attenuation.value(yearDay / 30.5);
     }
 
     public double getDiffusion(int yearDay) {
-        return diffusion.value(yearDay / 31.0);
+        return diffusion.value(yearDay / 30.5);
     }
 
+    
+    public double getWeatherFactor(int yearDay) {
+        return weather.value(yearDay / 30.5);
+    }
     /**
      *
      * KA: Returns the solar declination angle in degrees. This is the offset to
