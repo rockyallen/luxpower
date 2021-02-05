@@ -7,9 +7,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
@@ -19,7 +17,7 @@ import solar.model.Record;
 import solar.model.RecordFilter;
 
 /**
- * Daily performance averaged per month
+ * Daily performance averaged by month
  *
  * @author rocky
  */
@@ -51,44 +49,17 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
         yAxis.setTickUnit(1.0);
 
         xAxis.setLabel("Hour");
-        //xAxis.setAutoRanging(true);
+        xAxis.setAutoRanging(false);
         xAxis.setLowerBound(0);
         xAxis.setUpperBound(24);
         xAxis.setTickUnit(1);
-
-        VBox v = new VBox();
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Usage:"));
-        p.getChildren().addAll(new Label("Consumption"), size(consumptionBox));
-        p.getChildren().addAll(new Label("Inverter"), size(yieldBox));
-        p.getChildren().addAll(new Label("Export"), size(exportBox));
-        p.getChildren().addAll(new Label("Import"), size(importBox));
-        p.getChildren().addAll(new Label("Self use"), size(selfUseBox));
-        p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
-        p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
-        v.getChildren().add(p);
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Battery:"));
-        p.getChildren().addAll(new Label("Capacity"), size(nominalCapacityBox));
-        p.getChildren().addAll(new Label("Charge"), size(chargeBox));
-        p.getChildren().addAll(new Label("Discharge"), size(dischargeBox));
-        p.getChildren().addAll(new Label("Mean discharge"), size(dailyBox));
-        p.getChildren().addAll(new Label("Utilisation"), size(utilisationBox));
-        p.getChildren().addAll(new Label("Efficiency"), size(efficiencyBox));
-        v.getChildren().add(p);
-        setBottom(v);
     }
 
     @Override
     protected void analyse() {
 
-        Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.MONTH).result();
+        Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.Month).result();
 
-        //System.out.println("Analysing month="+ monthControl.getMonth()+ " records="+thisMonthRecords.size());
         for (XYChart.Series s : traces.values()) {
             s.getData().clear();
         }
@@ -99,7 +70,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             }
 
             RecordFilter<Record> filter = new RecordFilter<>(thisMonthRecords);
-            List<Record> thisHour = filter.period(hour, Period.HOUR).result();
+            List<Record> thisHour = filter.period(hour, Period.Hour).result();
             for (Record r : thisHour) {
 
                 totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));
@@ -118,7 +89,6 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             addPoint(tracePv2, totalPv2, hour, 0.001);
             addPoint(tracePv3, totalPv3, hour, 0.001);
             addPoint(traceCombined, totalCombined, hour, 0.001);
-            //addPoint(traceGeneration, totalGeneration, hour, 0.001);
             addPoint(traceInverter, totalInverter, hour, 0.001);
             addPoint(traceExported, totalExport, hour, 0.001);
             addPoint(traceImported, totalImport, hour, 0.001);
@@ -153,8 +123,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
     }
 
     @Override
-    public String toString()
-{
-    return "Daily power tab";
-}
+    public String toString() {
+        return "Daily power tab";
+    }
 }

@@ -21,7 +21,8 @@ public class DataStoreModel extends Task {
     // Include the effect of weather?
     private boolean weather = true;
     private Components components;
-    private final Calculator calculator= new Calculator();
+    private final Calculator calculator = new Calculator();
+    private boolean recordedWeather = false;
 
     /**
      * Run simulation and convert the outputs into log records as if they had
@@ -43,7 +44,7 @@ public class DataStoreModel extends Task {
         // Asemble components
         for (int month = 0; month < 12; month++) {
             updateMessage("Modelling month " + month);
-            for (int date = 0; date < calculator.daysPerMonth(month); date++) {
+            for (int date = 1; date <= Calculator.daysPerMonth(month); date++) {
                 // accumulators for each array
                 float pv3DayTotal = 0;
                 float pv2DayTotal = 0;
@@ -55,9 +56,15 @@ public class DataStoreModel extends Task {
                 //float generatedDayTotal = 0;
                 // time resolution, hours
                 float stepSize = 0.25f;
-                float weatherFactor = 0.0f;
+                
+                float weatherFactor;
                 if (weather) {
-                    weatherFactor = (float) calculator.getWeatherFactor(Calculator.dayNumber(month, date));
+                    int dayNumber = Calculator.dayNumber(month, date);
+                    if (recordedWeather) {
+                        weatherFactor = (float) calculator.getWeatherFactorRecorded(dayNumber);
+                    } else {
+                        weatherFactor = (float) calculator.getWeatherFactorSmoothed(dayNumber);
+                    }
                 } else {
                     weatherFactor = 1.0f;
                 }
@@ -157,8 +164,8 @@ public class DataStoreModel extends Task {
      *
      * @param weather the weather to set
      */
-    public void setWeather(boolean weather) {
-        this.weather = weather;
+    public void setSmoothedWeather(boolean selected) {
+        this.weather = selected;
     }
 
     @Override
@@ -169,5 +176,9 @@ public class DataStoreModel extends Task {
     public void setComponents(Components componentsList) {
         Objects.nonNull(componentsList);
         this.components = componentsList;
+    }
+
+    public void setRecordedWeather(boolean selected) {
+        this.recordedWeather = selected;
     }
 }

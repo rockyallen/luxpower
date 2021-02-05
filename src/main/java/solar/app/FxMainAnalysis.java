@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 
 /**
  * Graphical main.
- * 
+ *
  * @author rocky
  */
 public class FxMainAnalysis extends Application {
@@ -36,6 +36,8 @@ public class FxMainAnalysis extends Application {
         FxSummaryTab summary = new FxSummaryTab();
         FxAnalysisDailyTab power = new FxAnalysisDailyTab();
         FxAnalysisTab energy = new FxAnalysisTab(summary);
+        SolarTab solar = new SolarTab();
+        SolarFactorsTab solarFactors = new SolarFactorsTab();
 
         importTab.addListener(power);
         importTab.addListener(energy);
@@ -46,6 +48,8 @@ public class FxMainAnalysis extends Application {
         makeTab(tabPane, "Power", power, "Power variation during the day, averaged over each month");
         makeTab(tabPane, "Energy", energy, "Energy variation during the year");
         makeTab(tabPane, "Summary", summary, "Tabulated monthly results");
+        makeTab(tabPane, "Solar", solar, "Solar position by month");
+        makeTab(tabPane, "Attenuation", solarFactors, "Solar irradiance reduction factors");
 
         VBox vBox = new VBox(tabPane);
         vBox.setPrefSize(1500, 1000);

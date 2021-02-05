@@ -33,14 +33,14 @@ public class Components {
     // Array of 10 JAM60S10 340/MR on house East and West
     // House angle measured from google maps as 2.0 degrees
     // Tilt estimated from H2 ECO site visit
-    private SolarArray pv1 = new SolarArray("West", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 92.0, 20.0 / 100, defaultLatitude, defaultLongitude);
-    private SolarArray pv2 = new SolarArray("East", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 272.0, 20.0 / 100,  defaultLatitude, defaultLongitude);
+    private SolarArray pv1 = new SolarArray("West", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 92.0, 20.0 / 100, defaultLatitude, defaultLongitude, false, false);
+    private SolarArray pv2 = new SolarArray("East", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 272.0, 20.0 / 100,  defaultLatitude, defaultLongitude, false, false);
     // Array of 9 PV-TD185MF5 on garage
     // Angle measured from google maps as 2.0 degrees
     // Tilt from memory of design
-    private SolarArray pv3 = new SolarArray("South", "9 off 185 W", 9 * 1.65 * 0.83, 35.0, 2.0, 13.4 / 100,  defaultLatitude, defaultLongitude);
+    private SolarArray pv3 = new SolarArray("South", "9 off 185 W", 9 * 1.65 * 0.83, 35.0, 2.0, 13.4 / 100,  defaultLatitude, defaultLongitude, false, false);
     private Inverter inv12 = Inverter.valueOf("LUX Power", "", 3600.0, 0.96);
-    //private Inverter inv3 = Components.SunnyBoy;
+    private Inverter inv3 = Inverter.valueOf("LUX Power", "", 1200.0, 0.90);
     // Jan 2021, Octopus
     private Costs cost = new Costs("Current", 0.20, 0.15, 0.055, 0.52);
     private EnergyStore battery = new EnergyStore("PylonTech", "", 7200.0, 5760.0, 0.80, 3600.0, 3600.0);
@@ -113,7 +113,9 @@ public class Components {
                                         row.getCell(4).getNumericCellValue(),
                                         row.getCell(5).getNumericCellValue(),
                                         row.getCell(6).getNumericCellValue(),
-                                        row.getCell(7).getNumericCellValue()
+                                        row.getCell(7).getNumericCellValue(),
+                                        row.getCell(8).getBooleanCellValue(),
+                                        row.getCell(9).getBooleanCellValue()
                                 ));
                     }
                 }

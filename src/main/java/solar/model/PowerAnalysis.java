@@ -15,7 +15,7 @@ public class PowerAnalysis {
             output.clear();
 
             RecordFilter<Record> filter = new RecordFilter<>(input);
-            List<Record> thisHour = filter.period(hour, Period.HOUR).result();
+            List<Record> thisHour = filter.period(hour, Period.Hour).result();
             for (Record r : thisHour) {
 
                 output.totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));

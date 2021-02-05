@@ -31,16 +31,16 @@ public class DatedNumberLogger {
         Set<Integer> ret = new TreeSet<Integer>();
         for (DatedValue r : recs) {
             switch (p) {
-                case DAY:
+                case Day:
                     ret.add(Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()));
                     break;
-                case WEEK:
+                case Week:
                     ret.add(Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 7);
                     break;
-                case MONTH:
+                case Month:
                     ret.add(r.getDate().getMonth());
                     break;
-                case ALL:
+                case All:
                     throw new IllegalArgumentException("");
             }
         }

@@ -25,22 +25,22 @@ public class DatedNumberLoggerTest {
     @Test
     public void testUniqueEntriesDay() {
     DatedNumberLogger instance = new DatedNumberLogger();
-        instance.add(new Date(100, 0, 1), 2.0); // day = 1
-        instance.add(new Date(100, 0, 2), 3.0); // day = 2
-        instance.add(new Date(100, 0, 3), 7.0); // day = 3 
-        instance.add(new Date(100, 2, 4), 23.0); // day = 63
+        instance.add(new Date(100, 0, 1), 2.0); // day = 0
+        instance.add(new Date(100, 0, 2), 3.0); // day = 1
+        instance.add(new Date(100, 0, 3), 7.0); // day = 2 
+        instance.add(new Date(100, 2, 4), 23.0); // day = 62
         instance.add(new Date(100, 0, 5), 33.0); // day = 4 
-        instance.add(new Date(100, 0, 6), 5.0); // day = 6
+        instance.add(new Date(100, 0, 6), 5.0); // day = 5
 
-        Collection<Integer> result = instance.uniqueEntries(Period.DAY);
+        Collection<Integer> result = instance.uniqueEntries(Period.Day);
         String s = result.toString();
         assertEquals(6, result.size());
+        assertTrue(result.contains(0));
         assertTrue(result.contains(1));
         assertTrue(result.contains(2));
-        assertTrue(result.contains(3));
-        assertTrue(result.contains(63));
+        assertTrue(result.contains(62));
+        assertTrue(result.contains(4));
         assertTrue(result.contains(5));
-        assertTrue(result.contains(6));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class DatedNumberLoggerTest {
         instance.add(new Date(100, 0, 5), 33.0);
         instance.add(new Date(100, 11, 6), 5.0);
 
-        Collection<Integer> result = instance.uniqueEntries(Period.MONTH);
+        Collection<Integer> result = instance.uniqueEntries(Period.Month);
         String s = result.toString();
         assertEquals(3, result.size());
         assertTrue(result.contains(0));
@@ -66,13 +66,13 @@ public class DatedNumberLoggerTest {
     @Test
     public void testSlidingMean() {
     DatedNumberLogger instance = new DatedNumberLogger();
-        instance.add(new Date(100, 0, 0), 1.0); // day = 0
-        instance.add(new Date(100, 0, 1), 2.0); // day = 1 mean of 1,2,3 = 6/3 = 2
-        instance.add(new Date(100, 0, 2), 3.0);
-        instance.add(new Date(100, 0, 3), 7.0); // day = 3 mean of 3,7,23 = 33/3 = 11
-        instance.add(new Date(100, 0, 4), 23.0);
-        instance.add(new Date(100, 0, 5), 33.0); // day = 5 mean of 23,33,5= 61/3 = 20.333
-        instance.add(new Date(100, 0, 6), 5.0); // day = 6
+        instance.add(new Date(100, 0, 1), 1.0); // day = 0
+        instance.add(new Date(100, 0, 2), 2.0); // day = 1 mean of 1,2,3 = 6/3 = 2
+        instance.add(new Date(100, 0, 3), 3.0);
+        instance.add(new Date(100, 0, 4), 7.0); // day = 3 mean of 3,7,23 = 33/3 = 11
+        instance.add(new Date(100, 0, 5), 23.0);
+        instance.add(new Date(100, 0, 6), 33.0); // day = 5 mean of 23,33,5= 61/3 = 20.333
+        instance.add(new Date(100, 0, 7), 5.0); // day = 6
  
         Map<Integer, Double> result = instance.slidingMean(3);
         String s = result.toString();
@@ -85,9 +85,9 @@ public class DatedNumberLoggerTest {
     @Test
     public void testSize() {
     DatedNumberLogger instance = new DatedNumberLogger();
-        instance.add(new Date(100, 0, 0), 1.0);
-        instance.add(new Date(100, 0, 1), 2.0);
-        instance.add(new Date(100, 0, 2), 3.0);
+        instance.add(new Date(100, 0, 1), 1.0);
+        instance.add(new Date(100, 0, 2), 2.0);
+        instance.add(new Date(100, 0, 9), 3.0);
         assertEquals(3, instance.size());
     }
 

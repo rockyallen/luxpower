@@ -33,16 +33,17 @@ import solar.model.Record;
 
 /**
  * Pull in data from logs, or run a model.
- * 
+ *
  * @author rocky
  */
 public class FxImportTab extends BorderPane implements Changeable {
 
     //private final Button components = new Button("Components");
     private final Button reload = new Button("Import");
-    private final Button model = new Button("Go");
+    private final Button model = new Button("Simulate");
     private final TextArea t = new TextArea("");
     private final CheckBox weatherBox = new CheckBox("Weather");
+    private final CheckBox recordedWeatherBox = new CheckBox("Recorded");
     private final CheckBox fudgeBox = new CheckBox("Estimate PV3");
     private final Set<Listener> listeners = new HashSet<>();
     private final ComboBox battery = new ComboBox();
@@ -91,9 +92,20 @@ public class FxImportTab extends BorderPane implements Changeable {
 //                loadComponents();
 //            }
 //        });
-
         VBox vb = new VBox();
         HBox p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+        p.getChildren().addAll(new Label("System:"),
+                new Label("PV1"), pv1,
+                new Label("PV2"), pv2,
+                new Label("PV3"), pv3,
+                new Label("Inverter"), inverter,
+                new Label("Battery"), battery,
+                new Label("Cost"), cost);
+        vb.getChildren().add(p);
+
+        p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
         p.getChildren().addAll(new Label("Data:"), reload, fudgeBox);
@@ -102,14 +114,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Model:"), weatherBox, // components,
-                new Label("PV1"), pv1,
-                new Label("PV2"), pv2,
-                new Label("PV3"), pv3,
-                new Label("Inverter"), inverter,
-                new Label("Battery"), battery,
-                new Label("Cost"), cost,
-                model);
+        p.getChildren().addAll(new Label("Model:"), model, weatherBox, recordedWeatherBox);
         vb.getChildren().add(p);
         setTop(vb);
 
@@ -137,7 +142,6 @@ public class FxImportTab extends BorderPane implements Changeable {
                 records = (Collection<Record>) dsc.getValue();
                 t.appendText("Number of records=" + records.size() + "\n");
                 announceChanged();
-                //                      analyse.setDisable(false);
             }
         });
         dsc.setOnFailed(new EventHandler<WorkerStateEvent>() {
@@ -159,7 +163,8 @@ public class FxImportTab extends BorderPane implements Changeable {
 
     private void loadModel() {
         DataStoreModel dsm = new DataStoreModel();
-        dsm.setWeather(weatherBox.isSelected());
+        dsm.setSmoothedWeather(weatherBox.isSelected());
+        dsm.setRecordedWeather(recordedWeatherBox.isSelected());
 
         String sel = (String) pv1.getValue();
         if (sel != null) {
@@ -185,7 +190,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         if (sel != null) {
             componentsList.setCost(componentsList.getCosts().get(sel));
         }
-        
+
         dsm.setComponents(componentsList);
 //      pv1.valueProperty().addListener(new ChangeListener<String>() {
 //            @Override public void changed(ObservableValue ov, String t, String t1) {                

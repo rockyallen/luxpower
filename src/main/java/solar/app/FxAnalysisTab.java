@@ -60,32 +60,32 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         p.getChildren().addAll(new Text("Smoothing"), smoothing);
         setTop(p);
 
-        VBox v = new VBox();
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Usage:"));
-        p.getChildren().addAll(new Label("Consumption"), size(consumptionBox));
-        p.getChildren().addAll(new Label("Inverter"), size(yieldBox));
-        p.getChildren().addAll(new Label("Export"), size(exportBox));
-        p.getChildren().addAll(new Label("Import"), size(importBox));
-        p.getChildren().addAll(new Label("Self use"), size(selfUseBox));
-        p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
-        p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
-        v.getChildren().add(p);
-
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Battery:"));
-        p.getChildren().addAll(new Label("Capacity"), size(nominalCapacityBox));
-        p.getChildren().addAll(new Label("Charge"), size(chargeBox));
-        p.getChildren().addAll(new Label("Discharge"), size(dischargeBox));
-        p.getChildren().addAll(new Label("Mean discharge"), size(dailyBox));
-        p.getChildren().addAll(new Label("Utilisation"), size(utilisationBox));
-        p.getChildren().addAll(new Label("Efficiency"), size(efficiencyBox));
-        v.getChildren().add(p);
-        setBottom(v);
+//        VBox v = new VBox();
+//        p = new HBox();
+//        p.setPadding(FxMainAnalysis.INSETS);
+//        p.setSpacing(FxMainAnalysis.SPACING);
+//        p.getChildren().addAll(new Label("Usage:"));
+//        p.getChildren().addAll(new Label("Consumption"), size(consumptionBox));
+//        p.getChildren().addAll(new Label("Inverter"), size(yieldBox));
+//        p.getChildren().addAll(new Label("Export"), size(exportBox));
+//        p.getChildren().addAll(new Label("Import"), size(importBox));
+//        p.getChildren().addAll(new Label("Self use"), size(selfUseBox));
+//        p.getChildren().addAll(new Label("Self use ratio"), size(selfUseRatioBox));
+//        p.getChildren().addAll(new Label("Capacity factor"), size(capacityFactorBox));
+//        v.getChildren().add(p);
+//
+//        p = new HBox();
+//        p.setPadding(FxMainAnalysis.INSETS);
+//        p.setSpacing(FxMainAnalysis.SPACING);
+//        p.getChildren().addAll(new Label("Battery:"));
+//        p.getChildren().addAll(new Label("Capacity"), size(nominalCapacityBox));
+//        p.getChildren().addAll(new Label("Charge"), size(chargeBox));
+//        p.getChildren().addAll(new Label("Discharge"), size(dischargeBox));
+//        p.getChildren().addAll(new Label("Mean discharge"), size(dailyBox));
+//        p.getChildren().addAll(new Label("Utilisation"), size(utilisationBox));
+//        p.getChildren().addAll(new Label("Efficiency"), size(efficiencyBox));
+//        v.getChildren().add(p);
+//        setBottom(v);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         for (Collection<DatedValue> ll : accumulators) {
             ll.clear();
         }
-        List<Record> endOfDays = new RecordFilter<>(records).endOfPeriod(Period.DAY).result();
+        List<Record> endOfDays = new RecordFilter<>(records).endOfPeriod(Period.Day).result();
         for (Record r : endOfDays) {
 
             totalCharge.add(new DatedValue(r.getDate(), r.geteChgDay()));

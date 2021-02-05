@@ -58,13 +58,13 @@ public class DatedValueFilterTest {
     @Test
     public void testSlidingMean() {
         List<DatedValue> dv = new ArrayList<>();
-        dv.add(new DatedValue(new Date(100, 0, 0), 1.0)); // day = 0
-        dv.add(new DatedValue(new Date(100, 0, 1), 2.0)); // day = 1 mean of 1,2,3 = 6/3 = 2
-        dv.add(new DatedValue(new Date(100, 0, 2), 3.0));
-        dv.add(new DatedValue(new Date(100, 0, 3), 7.0)); // day = 3 mean of 3,7,23 = 33/3 = 11
-        dv.add(new DatedValue(new Date(100, 0, 4), 23.0));
-        dv.add(new DatedValue(new Date(100, 0, 5), 33.0)); // day = 5 mean of 23,33,5= 61/3 = 20.333
-        dv.add(new DatedValue(new Date(100, 0, 6), 5.0)); // day = 6
+        dv.add(new DatedValue(new Date(100, 0, 1), 1.0)); // day = 0
+        dv.add(new DatedValue(new Date(100, 0, 2), 2.0)); // day = 1 mean of 1,2,3 = 6/3 = 2
+        dv.add(new DatedValue(new Date(100, 0, 3), 3.0));
+        dv.add(new DatedValue(new Date(100, 0, 4), 7.0)); // day = 3 mean of 3,7,23 = 33/3 = 11
+        dv.add(new DatedValue(new Date(100, 0, 5), 23.0));
+        dv.add(new DatedValue(new Date(100, 0, 6), 33.0)); // day = 5 mean of 23,33,5= 61/3 = 20.333
+        dv.add(new DatedValue(new Date(100, 0, 7), 5.0)); // day = 6
  
         DatedValueFilter instance = new DatedValueFilter(dv);
         Map<Integer, Double> result = instance.slidingMean(3);
@@ -80,9 +80,9 @@ public class DatedValueFilterTest {
     @Test
     public void testTotal() {
         List<DatedValue> dv = new ArrayList<>();
-        dv.add(new DatedValue(new Date(100, 0, 0), 1.0));
-        dv.add(new DatedValue(new Date(100, 0, 1), 2.0));
-        dv.add(new DatedValue(new Date(100, 0, 2), 3.9));
+        dv.add(new DatedValue(new Date(100, 0, 1), 1.0));
+        dv.add(new DatedValue(new Date(100, 0, 2), 2.0));
+        dv.add(new DatedValue(new Date(100, 0, 3), 3.9));
         DatedValueFilter instance = new DatedValueFilter(dv);
         assertEquals(6.9, instance.total(), 0.001);
     }
