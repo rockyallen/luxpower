@@ -60,9 +60,11 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
         Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.Month).result();
 
+        sc.setCreateSymbols(true);
         for (XYChart.Series s : traces.values()) {
             s.getData().clear();
         }
+        sc.setCreateSymbols(false);
 
         for (int hour = 0; hour < 24; hour++) {
             for (Collection<DatedValue> ll : accumulators) {

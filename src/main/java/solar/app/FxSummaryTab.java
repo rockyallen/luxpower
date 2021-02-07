@@ -11,15 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import org.asciidoctor.Asciidoctor;
 import solar.model.Components;
 import solar.model.DatedValue;
@@ -42,7 +41,7 @@ public class FxSummaryTab extends FxHtmlTab {
     private Components components;
     private double ratedPower; // W
     private double ratedCapacity; // Wh
-    private String csv="Not generated";
+    private String csv = "Not generated";
 
     RadioButton rb1 = new RadioButton("Total");
     RadioButton rb2 = new RadioButton("Mean");
@@ -52,6 +51,7 @@ public class FxSummaryTab extends FxHtmlTab {
     RadioButton rb5 = new RadioButton("Month");
 
     Button export = new Button("Export");
+    Button show = new Button("Show");
     final ToggleGroup group1 = new ToggleGroup();
     final ToggleGroup group2 = new ToggleGroup();
     private List<DatedValue> pv1;
@@ -76,22 +76,46 @@ public class FxSummaryTab extends FxHtmlTab {
         rb1.setToggleGroup(group1);
         rb2.setToggleGroup(group1);
 
+        rb5.setSelected(true);
         rb3.setToggleGroup(group2);
         rb4.setToggleGroup(group2);
         rb5.setToggleGroup(group2);
 
-        group1.selectedToggleProperty().addListener(new ChangeListener() {
+        HBox p = new HBox();
+        p.setPadding(FxMainAnalysis.INSETS);
+        p.setSpacing(FxMainAnalysis.SPACING);
+
+        VBox vb = new VBox();
+        vb.setPadding(FxMainAnalysis.INSETS);
+        vb.setSpacing(FxMainAnalysis.SPACING);
+        TitledPane tpane = new TitledPane("Values", vb);
+        tpane.setCollapsible(false);
+        vb.getChildren().addAll(rb1, rb2);
+        p.getChildren().add(tpane);
+
+        vb = new VBox();
+        vb.setPadding(FxMainAnalysis.INSETS);
+        vb.setSpacing(FxMainAnalysis.SPACING);
+        tpane = new TitledPane("Group by", vb);
+        tpane.setCollapsible(false);
+        vb.getChildren().addAll(rb5, rb4, rb3);
+        p.getChildren().add(tpane);
+
+        p.getChildren().add(show);
+
+        p.getChildren().add(export);
+
+        setTop(p);
+
+        show.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                if (components !=null) analyse();
+            public void handle(ActionEvent value) {
+                if (components != null) {
+                    analyse();
+                }
             }
         });
-        group2.selectedToggleProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                if (components !=null) analyse();
-            }
-        });
+
         export.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
@@ -112,13 +136,6 @@ public class FxSummaryTab extends FxHtmlTab {
                 }
             }
         });
-        HBox b = new HBox();
-        b.setPadding(FxMainAnalysis.INSETS);
-        b.setSpacing(FxMainAnalysis.SPACING);
-        rb1.setSelected(true);
-        rb5.setSelected(true);
-        b.getChildren().addAll(rb1, rb2, rb3, rb4, rb5, export);
-        setTop(b);
     }
 
     void populate(List<DatedValue> pv1, List<DatedValue> pv2, List<DatedValue> pv3, List<DatedValue> totalCombined,

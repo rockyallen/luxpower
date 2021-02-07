@@ -43,12 +43,12 @@ public class FxMainAnalysis extends Application {
         importTab.addListener(energy);
 
         TabPane tabPane = new TabPane();
-        makeTab(tabPane, "Introduction", new FxIntroTab(), "User guide");
+        makeTab(tabPane, "User guide", new FxIntroTab(), "User guide");
         makeTab(tabPane, "Source", importTab, "Reload data");
         makeTab(tabPane, "Power", power, "Power variation during the day, averaged over each month");
         makeTab(tabPane, "Energy", energy, "Energy variation during the year");
         makeTab(tabPane, "Summary", summary, "Tabulated monthly results");
-        makeTab(tabPane, "Solar", solar, "Solar position by month");
+        makeTab(tabPane, "Sun position", solar, "Solar position by month");
         makeTab(tabPane, "Attenuation", solarFactors, "Solar irradiance reduction factors");
 
         VBox vBox = new VBox(tabPane);

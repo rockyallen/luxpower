@@ -10,14 +10,19 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -38,12 +43,14 @@ import solar.model.Record;
  */
 public class FxImportTab extends BorderPane implements Changeable {
 
-    //private final Button components = new Button("Components");
+    private final Button components = new Button("Reload");
     private final Button reload = new Button("Import");
-    private final Button model = new Button("Simulate");
+    private final Button model = new Button("Run");
     private final TextArea t = new TextArea("");
-    private final CheckBox weatherBox = new CheckBox("Weather");
-    private final CheckBox recordedWeatherBox = new CheckBox("Recorded");
+    private final RadioButton weatherBox1 = new RadioButton("No weather");
+    private final RadioButton weatherBox2 = new RadioButton("Raw weather");
+    private final RadioButton weatherBox3 = new RadioButton("Smoothed weather");
+    private final ToggleGroup group1 = new ToggleGroup();
     private final CheckBox fudgeBox = new CheckBox("Estimate PV3");
     private final Set<Listener> listeners = new HashSet<>();
     private final ComboBox battery = new ComboBox();
@@ -86,37 +93,56 @@ public class FxImportTab extends BorderPane implements Changeable {
             }
         });
 
-//        components.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent value) {
-//                loadComponents();
-//            }
-//        });
-        VBox vb = new VBox();
+        components.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent value) {
+                loadComponents();
+            }
+        });
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("System:"),
-                new Label("PV1"), pv1,
-                new Label("PV2"), pv2,
-                new Label("PV3"), pv3,
-                new Label("Inverter"), inverter,
-                new Label("Battery"), battery,
-                new Label("Cost"), cost);
-        vb.getChildren().add(p);
 
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Data:"), reload, fudgeBox);
-        vb.getChildren().add(p);
+        GridPane g = new GridPane();
+        g.setHgap(5);
+        g.setVgap(5);
+        g.add(new Label("PV1"), 0, 0, 1, 1);
+        g.add(pv1, 1, 0, 1, 1);
+        g.add(new Label("PV2"), 0, 1, 1, 1);
+        g.add(pv2, 1, 1, 1, 1);
+        g.add(new Label("PV3"), 0, 2, 1, 1);
+        g.add(pv3, 1, 2, 1, 1);
+        g.add(new Label("Inverter"), 0, 3, 1, 1);
+        g.add(inverter, 1, 3, 1, 1);
+        g.add(new Label("Battery"), 0, 4, 1, 1);
+        g.add(battery, 1, 4, 1, 1);
+        g.add(new Label("Cost"), 0, 5, 1, 1);
+        g.add(cost, 1, 5, 1, 1);
 
-        p = new HBox();
-        p.setPadding(FxMainAnalysis.INSETS);
-        p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Label("Model:"), model, weatherBox, recordedWeatherBox);
-        vb.getChildren().add(p);
-        setTop(vb);
+        g.add(components, 1, 6, 1, 1);
+
+        TitledPane tpane = new TitledPane("System", g);
+        tpane.setCollapsible(false);
+        p.getChildren().add(tpane);
+
+        VBox vb = new VBox();
+        vb.setPadding(FxMainAnalysis.INSETS);
+        vb.setSpacing(FxMainAnalysis.SPACING);
+        vb.getChildren().addAll(fudgeBox, reload);
+        tpane = new TitledPane("Recorded data", vb);
+        tpane.setCollapsible(false);
+        p.getChildren().add(tpane);
+
+        vb = new VBox();
+        vb.setPadding(FxMainAnalysis.INSETS);
+        vb.setSpacing(FxMainAnalysis.SPACING);
+        weatherBox1.setSelected(true);
+        group1.getToggles().addAll(weatherBox1, weatherBox2, weatherBox3);
+        vb.getChildren().addAll(weatherBox1, weatherBox2, weatherBox3, model);
+        tpane = new TitledPane("Modelled data", vb);
+        tpane.setCollapsible(false);
+        p.getChildren().add(tpane);
+        setTop(p);
 
         ScrollPane sp = new ScrollPane();
         sp.setHbarPolicy(ScrollBarPolicy.NEVER);
@@ -163,8 +189,8 @@ public class FxImportTab extends BorderPane implements Changeable {
 
     private void loadModel() {
         DataStoreModel dsm = new DataStoreModel();
-        dsm.setSmoothedWeather(weatherBox.isSelected());
-        dsm.setRecordedWeather(recordedWeatherBox.isSelected());
+        dsm.setSmoothedWeather(weatherBox2.isSelected());
+        dsm.setRecordedWeather(weatherBox2.isSelected());
 
         String sel = (String) pv1.getValue();
         if (sel != null) {
@@ -192,11 +218,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         }
 
         dsm.setComponents(componentsList);
-//      pv1.valueProperty().addListener(new ChangeListener<String>() {
-//            @Override public void changed(ObservableValue ov, String t, String t1) {                
-//                ppv1;                
-//            }    
-//        });                
+
         dsm.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent ev) {
@@ -284,5 +306,12 @@ public class FxImportTab extends BorderPane implements Changeable {
         } else {
             t.appendText("Loading FAILED. File moved? Format wrong?\n");
         }
+    }
+
+    private Node make(String pV1, ComboBox pv1) {
+        HBox p = new HBox();
+        p.getChildren().add(new Label(pV1));
+        p.getChildren().add(pv1);
+        return p;
     }
 }
