@@ -195,7 +195,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
 
     @Override
     public String toString() {
-        return "Annual Energy";
+        return "Annual Energy graph";
     }
 
 }

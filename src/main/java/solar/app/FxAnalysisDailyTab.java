@@ -53,6 +53,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
         xAxis.setLowerBound(0);
         xAxis.setUpperBound(24);
         xAxis.setTickUnit(1);
+        //sc.setCreateSymbols(true);
     }
 
     @Override
@@ -60,11 +61,9 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
         Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.Month).result();
 
-        sc.setCreateSymbols(true);
         for (XYChart.Series s : traces.values()) {
             s.getData().clear();
         }
-        sc.setCreateSymbols(false);
 
         for (int hour = 0; hour < 24; hour++) {
             for (Collection<DatedValue> ll : accumulators) {
@@ -108,7 +107,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             XYChart.Series trace = e.getValue();
             if (show && !sc.getData().contains(trace)) {
                 sc.getData().add(trace);
-            } else if (!show && sc.getData().contains(trace)) {
+            } else /*if (!show && sc.getData().contains(trace))*/ {
                 sc.getData().remove(trace);
             }
         }
@@ -126,6 +125,6 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
     @Override
     public String toString() {
-        return "Daily power tab";
+        return "Daily power graph";
     }
 }

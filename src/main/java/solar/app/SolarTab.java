@@ -78,6 +78,8 @@ public class SolarTab extends BorderPane {
         p.setSpacing(FxMainAnalysis.SPACING);
         p.getChildren().addAll(new Text("Month"), monthControl, new Text("Latitude"), latitudeSlider);
         setTop(p);
+        
+        plot();
     }
 
     protected void analyse() {
