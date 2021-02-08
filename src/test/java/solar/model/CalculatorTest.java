@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import solar.model.Calculator.Weather;
 
 /**
  *
@@ -105,14 +106,16 @@ public class CalculatorTest {
 
     @Test
     public void testWeatherSmoothed() {
-        assertEquals(0.27, instance.getWeatherFactorSmoothed(Calculator.dayNumber(1, 14)),0.05); // on a knot
-        assertEquals(0.49, instance.getWeatherFactorSmoothed(Calculator.dayNumber(5, 14)),0.05); // on a knot
+        Weather w = Calculator.Weather.SMOOTHEDWEATHER;
+        assertEquals(0.27, w.getWeatherFactor(Calculator.dayNumber(1, 14)), 0.05); // on a knot
+        assertEquals(0.49, w.getWeatherFactor(Calculator.dayNumber(5, 14)), 0.05); // on a knot
     }
 
     @Test
     public void testWeatherRecorded() {
-        assertEquals(0.1302, instance.getWeatherFactorRecorded(0), 0.01); // on a knot
-        assertEquals(0.0746, instance.getWeatherFactorRecorded(364), 0.01); // on a knot
+        Weather w = Calculator.Weather.RAWWEATHER;
+        assertEquals(0.1302, w.getWeatherFactor(0), 0.01); // on a knot
+        assertEquals(0.0746, w.getWeatherFactor(364), 0.01); // on a knot
     }
 
     @Test
@@ -720,6 +723,7 @@ public class CalculatorTest {
 //360	3.7221794971115987	1.3123963622485406	1.727101449136125
     /**
      * Test solarIrradiance
+     *
      * @param dayNumber
      * @param irradiance
      */
@@ -738,10 +742,9 @@ public class CalculatorTest {
     public void testsolarIrradiance(int dayNumber, double irradiance) {
         assertEquals(irradiance, instance.solarIrradiance(dayNumber), 0.05);
     }
-    
+
     @Test
-    public void testFormatHours()
-    {
+    public void testFormatHours() {
         assertEquals("7:32 AM", instance.formatHours(7.533));
         assertEquals("8:32 PM", instance.formatHours(20.533));
     }

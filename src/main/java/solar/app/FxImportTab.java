@@ -27,6 +27,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import solar.model.Calculator;
 import solar.model.DataStoreXls;
 import solar.model.Changeable;
 import solar.model.Components;
@@ -47,9 +48,9 @@ public class FxImportTab extends BorderPane implements Changeable {
     private final Button reload = new Button("Import");
     private final Button model = new Button("Run");
     private final TextArea t = new TextArea("");
-    private final RadioButton weatherBox1 = new RadioButton("No weather");
-    private final RadioButton weatherBox2 = new RadioButton("Raw weather");
-    private final RadioButton weatherBox3 = new RadioButton("Smoothed weather");
+    private final RadioButton noWeather = new RadioButton("No weather");
+    private final RadioButton rawWeather = new RadioButton("Raw weather");
+    private final RadioButton smoothedWeather = new RadioButton("Smoothed weather");
     private final ToggleGroup group1 = new ToggleGroup();
     private final CheckBox fudgeBox = new CheckBox("Estimate PV3");
     private final Set<Listener> listeners = new HashSet<>();
@@ -136,9 +137,9 @@ public class FxImportTab extends BorderPane implements Changeable {
         vb = new VBox();
         vb.setPadding(FxMainAnalysis.INSETS);
         vb.setSpacing(FxMainAnalysis.SPACING);
-        weatherBox1.setSelected(true);
-        group1.getToggles().addAll(weatherBox1, weatherBox2, weatherBox3);
-        vb.getChildren().addAll(weatherBox1, weatherBox2, weatherBox3, model);
+        noWeather.setSelected(true);
+        group1.getToggles().addAll(noWeather, rawWeather, smoothedWeather);
+        vb.getChildren().addAll(noWeather, rawWeather, smoothedWeather, model);
         tpane = new TitledPane("Modelled data", vb);
         tpane.setCollapsible(false);
         p.getChildren().add(tpane);
@@ -189,8 +190,10 @@ public class FxImportTab extends BorderPane implements Changeable {
 
     private void loadModel() {
         DataStoreModel dsm = new DataStoreModel();
-        dsm.setSmoothedWeather(weatherBox2.isSelected());
-        dsm.setRecordedWeather(weatherBox2.isSelected());
+        if (smoothedWeather.isSelected())
+        dsm.setWeather(Calculator.Weather.SMOOTHEDWEATHER);
+        else if (rawWeather.isSelected())
+        dsm.setWeather(Calculator.Weather.RAWWEATHER);
 
         String sel = (String) pv1.getValue();
         if (sel != null) {

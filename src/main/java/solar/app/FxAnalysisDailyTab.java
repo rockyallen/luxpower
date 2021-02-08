@@ -107,7 +107,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             XYChart.Series trace = e.getValue();
             if (show && !sc.getData().contains(trace)) {
                 sc.getData().add(trace);
-            } else /*if (!show && sc.getData().contains(trace))*/ {
+            } else if (!show && sc.getData().contains(trace)) {
                 sc.getData().remove(trace);
             }
         }

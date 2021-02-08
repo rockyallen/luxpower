@@ -6,6 +6,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import solar.model.Calculator;
+import static solar.model.Calculator.Weather;
 
 /**
  * SUN POSITION
@@ -16,7 +17,8 @@ public class SolarFactorsTab extends BorderPane {
 
     private final Calculator calculator = new Calculator();
     protected final XYChart.Series attenuationTrace = new XYChart.Series();
-    protected final XYChart.Series weatherTrace = new XYChart.Series();
+    protected final XYChart.Series smoothedWeatherTrace = new XYChart.Series();
+    protected final XYChart.Series rawWeatherTrace = new XYChart.Series();
     protected final XYChart.Series diffusionTrace = new XYChart.Series();
 
     protected final NumberAxis xAxis = new NumberAxis(0, 364, 30);
@@ -41,9 +43,11 @@ public class SolarFactorsTab extends BorderPane {
         sc.setCreateSymbols(false);
         sc.getData().add(attenuationTrace);
         sc.getData().add(diffusionTrace);
-        sc.getData().add(weatherTrace);
+        sc.getData().add(smoothedWeatherTrace);
+        sc.getData().add(rawWeatherTrace);
         diffusionTrace.setName("Diffusion");
-        weatherTrace.setName("Weather (sunny days)");
+        smoothedWeatherTrace.setName("Weather (smoothed)");
+        rawWeatherTrace.setName("Weather (raw)");
         attenuationTrace.setName("Attenuation");
 
         HBox p = new HBox();
@@ -58,13 +62,14 @@ public class SolarFactorsTab extends BorderPane {
     }
 
     protected void plot() {
-        weatherTrace.getData().clear();
+        smoothedWeatherTrace.getData().clear();
         diffusionTrace.getData().clear();
         attenuationTrace.getData().clear();
-        for (int i = 0; i < 365; i++) {
-            weatherTrace.getData().add(new XYChart.Data(i, calculator.getWeatherFactorSmoothed(i)));
-            diffusionTrace.getData().add(new XYChart.Data(i, calculator.getDiffusion(i)));
-            attenuationTrace.getData().add(new XYChart.Data(i, calculator.getAttenuation(i)));
+        for (int dayNumber = 0; dayNumber < 365; dayNumber++) {
+            smoothedWeatherTrace.getData().add(new XYChart.Data(dayNumber+1, Weather.SMOOTHEDWEATHER.getWeatherFactor(dayNumber)));
+            rawWeatherTrace.getData().add(new XYChart.Data(dayNumber+1, Weather.RAWWEATHER.getWeatherFactor(dayNumber)));
+            diffusionTrace.getData().add(new XYChart.Data(dayNumber+1, calculator.getDiffusion(dayNumber)));
+            attenuationTrace.getData().add(new XYChart.Data(dayNumber+1, calculator.getAttenuation(dayNumber)));
         }
     }
 

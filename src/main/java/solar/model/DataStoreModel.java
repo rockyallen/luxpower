@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
 import javafx.concurrent.Task;
+import solar.model.Calculator.Weather;
 
 /**
  * System model.
@@ -17,12 +18,14 @@ public class DataStoreModel extends Task {
     // public static final Inverter perfectInverter = Inverter.valueOf("Perfect", "", 100000, 1.0);
     // Total 9 kWh per day, guessed profile per hour in kW
     public static final float[] HOURLY_CONSUMPTION = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 1.0f, 2.8f, 1.0f, 0.2f, 0.2f, 0.2f, 0.2f};
-
     // Include the effect of weather?
-    private boolean weather = true;
+    private Calculator.Weather weather;
     private Components components;
     private final Calculator calculator = new Calculator();
-    private boolean recordedWeather = false;
+
+    public DataStoreModel() {
+        this.weather = Calculator.Weather.NOWEATHER;
+    }
 
     /**
      * Run simulation and convert the outputs into log records as if they had
@@ -32,7 +35,7 @@ public class DataStoreModel extends Task {
      * separate field in Record for it, the output is added to the (single)
      * inverter output.
      *
-     * @return
+     * @returnDataStoreModel
      */
     @Override
     public Collection<Record> call() {
@@ -57,17 +60,8 @@ public class DataStoreModel extends Task {
                 // time resolution, hours
                 float stepSize = 0.25f;
                 
-                float weatherFactor;
-                if (weather) {
-                    int dayNumber = Calculator.dayNumber(month, date);
-                    if (recordedWeather) {
-                        weatherFactor = (float) calculator.getWeatherFactorRecorded(dayNumber);
-                    } else {
-                        weatherFactor = (float) calculator.getWeatherFactorSmoothed(dayNumber);
-                    }
-                } else {
-                    weatherFactor = 1.0f;
-                }
+                int dayNumber = Calculator.dayNumber(month, date);
+                float weatherFactor = weather.getWeatherFactor(dayNumber);
 
                 for (int solarHour = 0; solarHour < 24; solarHour += 1) {
                     // instantaneous power for each array
@@ -152,25 +146,9 @@ public class DataStoreModel extends Task {
         return records;
     }
 
-    /**
-     * Include the effects of weather?
-     *
-     * If true allow for the reduction in output caused by poor weather. If
-     * false, outputs (unrealistic) sunny-days-always.
-     *
-     * @design Just scales by a month-determined amount. Not very realistic
-     * since it means the inverters will never limit. Better to apply a
-     * distribution with the same mean?
-     *
-     * @param weather the weather to set
-     */
-    public void setSmoothedWeather(boolean selected) {
-        this.weather = selected;
-    }
-
     @Override
     public String toString() {
-        return "Modelled. Weather " + (weather ? "" : "not") + " included.";
+        return "Modelled. Weather " + weather;
     }
 
     public void setComponents(Components componentsList) {
@@ -178,7 +156,7 @@ public class DataStoreModel extends Task {
         this.components = componentsList;
     }
 
-    public void setRecordedWeather(boolean selected) {
-        this.recordedWeather = selected;
+    public void setWeather(Weather weather) {
+        this.weather = weather;
     }
 }
