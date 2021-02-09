@@ -7,7 +7,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
 import solar.model.Calculator;
 
 /**
@@ -17,7 +16,7 @@ import solar.model.Calculator;
  */
 public class SolarTab extends BorderPane {
 
-    private final FxMonthControl monthControl = new FxMonthControl();
+    private final FxMonthControl monthControl = new FxMonthControl(1);
     private final Calculator calculator = new Calculator();
     protected final XYChart.Series elevationTrace = new XYChart.Series();
     protected final XYChart.Series azimuthTrace = new XYChart.Series();
@@ -26,7 +25,7 @@ public class SolarTab extends BorderPane {
     protected final NumberAxis yAxis = new NumberAxis(0, 50, 10);
     protected final LineChart<Number, Number> sc = new LineChart<>(xAxis, yAxis);
 
-    private final FxLatitudeControl latitudeSlider = new FxLatitudeControl();
+    private final FxLatitudeControl latitudeSlider = new FxLatitudeControl(50);
 
     public SolarTab() {
 
@@ -46,14 +45,14 @@ public class SolarTab extends BorderPane {
         xAxis.setUpperBound(24);
         xAxis.setTickUnit(1);
 
-        latitudeSlider.getLatitudeProperty().addListener(new ChangeListener<Number>() {
+        latitudeSlider.getProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 analyse();
                 plot();
             }
         });
 
-        monthControl.getMonthProperty().addListener(new ChangeListener<Number>() {
+        monthControl.getProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 analyse();
                 plot();
@@ -76,9 +75,9 @@ public class SolarTab extends BorderPane {
         p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Text("Month"), monthControl, new Text("Latitude"), latitudeSlider);
+        p.getChildren().addAll(monthControl, latitudeSlider);
         setTop(p);
-        
+
         plot();
     }
 
@@ -86,11 +85,12 @@ public class SolarTab extends BorderPane {
     }
 
     protected void plot() {
-        int month = monthControl.getMonth();
-        double latitude = latitudeSlider.getLatitudeValue();
+        int month = monthControl.getValue();
+        double latitude = latitudeSlider.getValue();
         elevationTrace.getData().clear();
         azimuthTrace.getData().clear();
-        for (double hour = 0.0; hour < 24.0; hour += 0.2) {
+        final double TIME_STEP = 0.2;
+        for (double hour = 0.0; hour < 24.0; hour += TIME_STEP) {
             int daynumber = Calculator.dayNumber(month, 15);
             double elevation = calculator.getSunElevation(latitude, daynumber, hour);
             elevationTrace.getData().add(new XYChart.Data(hour, elevation));

@@ -26,17 +26,17 @@ public class FxMainTest extends Application {
     public void start(Stage stage) {
         
         BorderPane p = new BorderPane();
-        FxMonthControl c = new FxMonthControl();
+        FxMonthControl c = new FxMonthControl(1);
         
         TextArea t = new TextArea();
         
         t.setPrefSize(2000, 2000);
         
-        c.getMonthProperty().addListener(new ChangeListener() {
+        c.getProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue arg0, Object arg1, Object arg2) {
                 //t.appendText(arg2.toString()+"  ");
-                t.appendText(c.getMonth()+":"+c.getMonthName()+"  ");
+                t.appendText(c.getValue()+":"+c.getMonthName()+"  ");
             }
         });
         p.setCenter(t);

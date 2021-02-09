@@ -23,12 +23,12 @@ import solar.model.RecordFilter;
  */
 public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
 
-    private final FxMonthControl monthControl = new FxMonthControl();
+    private final FxMonthControl monthControl = new FxMonthControl(1);
 
     public FxAnalysisDailyTab() {
 
         super();
-        monthControl.getMonthProperty().addListener(new ChangeListener<Number>() {
+        monthControl.getProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                     Number old_val, Number new_val) {
                 analyse();
@@ -39,7 +39,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Text("Month"), monthControl);
+        p.getChildren().addAll(monthControl);
         setTop(p);
 
         yAxis.setLabel("kW");
@@ -59,7 +59,7 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
     @Override
     protected void analyse() {
 
-        Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getMonth(), Period.Month).result();
+        Collection<Record> thisMonthRecords = new RecordFilter<>(records).period(monthControl.getValue(), Period.Month).result();
 
         for (XYChart.Series s : traces.values()) {
             s.getData().clear();

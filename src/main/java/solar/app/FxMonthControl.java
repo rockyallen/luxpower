@@ -8,25 +8,25 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import solar.model.Calculator;
 
 /**
  * Encapsulates a slider and a label to choose a month.
  *
  * The slider runs 1-12 and the label adjusts in tandem. Listen to the
- * monthProperty to get changes.
+ * ValueProperty to get changes.
  *
  * @author rocky
  */
-public class FxMonthControl extends HBox {
+public class FxMonthControl extends VBox {
 
     private final Slider slider = new Slider(1, 12, 1);
-    private final Label label = new Label("  Jan");
-    private final IntegerProperty monthProperty = new SimpleIntegerProperty();
+    private final Label label = new Label("                  ");
+    private final IntegerProperty valueProperty = new SimpleIntegerProperty();
 
-    public FxMonthControl() {
-        label.setPrefWidth(50);
+    public FxMonthControl(int initVal) {
+        //label.setPrefWidth(200);
         slider.setBlockIncrement(1);
         slider.setMajorTickUnit(1);
         slider.setMinorTickCount(0);
@@ -34,43 +34,67 @@ public class FxMonthControl extends HBox {
         slider.setPrefSize(400, 20);
         slider.setSnapToTicks(true);
         slider.setTooltip(new Tooltip("Month 1-12"));
-        monthProperty.set(Math.round((int) slider.getValue()));
 
         slider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
-                monthProperty.setValue(Math.round(new_val.floatValue()));
+                double val = Math.round(new_val.floatValue());
+                if (val < 1) {
+                    throw new IllegalStateException("" + val);
+                }
+                valueProperty.setValue(val);
             }
         });
-        monthProperty.addListener(new ChangeListener<Number>() {
+        valueProperty.addListener(new ChangeListener<Number>() {
+            @Override
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
-                label.setText("  " + getMonthName());
+            setLabel();
             }
         });
-        this.getChildren().add(slider);
-        this.getChildren().add(label);
+
+        getChildren().add(label);
+        getChildren().add(slider);
+
+        slider.adjustValue(initVal);
+        valueProperty.setValue(initVal);
+        setLabel();
     }
 
+    private void setLabel() {
+       label.setText("Month " + getMonthName());
+    }
+    
     /**
      * Month
      *
      * @see getMonthName()
      * @return Selected month, 0-11
      */
-    public int getMonth() {
-        return monthProperty.get() - 1;
+    public int getValue() {
+        return valueProperty.get() - 1;
     }
 
-    public ReadOnlyIntegerProperty getMonthProperty() {
-        return monthProperty;
+    /**
+     * For debugging only
+     * 
+     * @return 
+     */
+    public String getLabelText() {
+        return label.getText();
+    }
+
+    public ReadOnlyIntegerProperty getProperty() {
+        return valueProperty;
     }
 
     /**
      * Month name as three letter abbreviation.
      *
-     * @see getMonth()
+     * @see #getValue()
      * @return Selected month, 0-11
      */
     public String getMonthName() {
-        return Calculator.monthName(getMonth());
+        return Calculator.monthName(getValue());
     }
+
 }

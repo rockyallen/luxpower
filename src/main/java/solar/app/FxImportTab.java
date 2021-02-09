@@ -31,6 +31,7 @@ import solar.model.Calculator;
 import solar.model.DataStoreXls;
 import solar.model.Changeable;
 import solar.model.Components;
+import solar.model.Consumption;
 import solar.model.DataStoreCacheReader;
 import solar.model.DataStoreCacheWriter;
 import solar.model.Listener;
@@ -43,7 +44,7 @@ import solar.model.Record;
  * @author rocky
  */
 public class FxImportTab extends BorderPane implements Changeable {
-
+    
     private final Button components = new Button("Reload");
     private final Button reload = new Button("Import");
     private final Button model = new Button("Run");
@@ -60,15 +61,15 @@ public class FxImportTab extends BorderPane implements Changeable {
     private final ComboBox pv2 = new ComboBox();
     private final ComboBox pv3 = new ComboBox();
     private final ComboBox cost = new ComboBox();
-
+    
     private final Components componentsList = new Components();
     private Collection<Record> records;
-
+    
     @Override
     public void addListener(Listener ll) {
         listeners.add(ll);
     }
-
+    
     public void announceChanged() {
         t.appendText("Updating graphs...\n");
         for (Listener ll : listeners) {
@@ -77,23 +78,23 @@ public class FxImportTab extends BorderPane implements Changeable {
         }
         t.appendText("Done\n");
     }
-
+    
     public FxImportTab() {
-
+        
         model.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
                 loadModel();
             }
         });
-
+        
         reload.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
                 loadLogs();
             }
         });
-
+        
         components.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent value) {
@@ -103,7 +104,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-
+        
         GridPane g = new GridPane();
         g.setHgap(5);
         g.setVgap(5);
@@ -119,13 +120,13 @@ public class FxImportTab extends BorderPane implements Changeable {
         g.add(battery, 1, 4, 1, 1);
         g.add(new Label("Cost"), 0, 5, 1, 1);
         g.add(cost, 1, 5, 1, 1);
-
+        
         g.add(components, 1, 6, 1, 1);
-
+        
         TitledPane tpane = new TitledPane("System", g);
         tpane.setCollapsible(false);
         p.getChildren().add(tpane);
-
+        
         VBox vb = new VBox();
         vb.setPadding(FxMainAnalysis.INSETS);
         vb.setSpacing(FxMainAnalysis.SPACING);
@@ -133,7 +134,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         tpane = new TitledPane("Recorded data", vb);
         tpane.setCollapsible(false);
         p.getChildren().add(tpane);
-
+        
         vb = new VBox();
         vb.setPadding(FxMainAnalysis.INSETS);
         vb.setSpacing(FxMainAnalysis.SPACING);
@@ -144,7 +145,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         tpane.setCollapsible(false);
         p.getChildren().add(tpane);
         setTop(p);
-
+        
         ScrollPane sp = new ScrollPane();
         sp.setHbarPolicy(ScrollBarPolicy.NEVER);
         VBox box = new VBox();
@@ -153,13 +154,13 @@ public class FxImportTab extends BorderPane implements Changeable {
         box.getChildren().add(t);
         VBox.setVgrow(sp, Priority.ALWAYS);
         box.setPadding(FxMainAnalysis.INSETS);
-
+        
         setCenter(box);
-
+        
         loadCache();
         loadComponents();
     }
-
+    
     private void loadCache() {
         DataStoreCacheReader dsc = new DataStoreCacheReader();
         dsc.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -184,17 +185,20 @@ public class FxImportTab extends BorderPane implements Changeable {
                 t.appendText(newVal.toString() + "\n");
             }
         });
-
+        
         Executors.newSingleThreadExecutor().submit(dsc);
     }
-
+    
     private void loadModel() {
         DataStoreModel dsm = new DataStoreModel();
-        if (smoothedWeather.isSelected())
-        dsm.setWeather(Calculator.Weather.SMOOTHEDWEATHER);
-        else if (rawWeather.isSelected())
-        dsm.setWeather(Calculator.Weather.RAWWEATHER);
-
+        if (smoothedWeather.isSelected()) {
+            dsm.setWeather(Calculator.Weather.SMOOTHEDWEATHER);
+        } else if (rawWeather.isSelected()) {
+            dsm.setWeather(Calculator.Weather.RAWWEATHER);
+        }
+        // prepare for making this variable same as other components
+        dsm.setConsumption(new Consumption());
+        
         String sel = (String) pv1.getValue();
         if (sel != null) {
             componentsList.setPv1(componentsList.getArrays().get(sel));
@@ -219,9 +223,9 @@ public class FxImportTab extends BorderPane implements Changeable {
         if (sel != null) {
             componentsList.setCost(componentsList.getCosts().get(sel));
         }
-
+        
         dsm.setComponents(componentsList);
-
+        
         dsm.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent ev) {
@@ -246,7 +250,7 @@ public class FxImportTab extends BorderPane implements Changeable {
         });
         Executors.newSingleThreadExecutor().submit(dsm);
     }
-
+    
     private void loadLogs() {
         DataStoreXls dsx = new DataStoreXls();
         dsx.setFudge(fudgeBox.isSelected());
@@ -278,17 +282,17 @@ public class FxImportTab extends BorderPane implements Changeable {
                 t.appendText(newVal.toString() + "\n");
             }
         });
-
+        
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(dsx.getFolder());
-
+        
         File from = directoryChooser.showDialog(null);
         if (from != null) {
             dsx.setFolder(from);
             Executors.newSingleThreadExecutor().submit(dsx);
         }
     }
-
+    
     private void loadComponents() {
         t.appendText("Loading components.xls\n");
         if (componentsList.load(new File("components.xls"))) {
@@ -310,7 +314,7 @@ public class FxImportTab extends BorderPane implements Changeable {
             t.appendText("Loading FAILED. File moved? Format wrong?\n");
         }
     }
-
+    
     private Node make(String pV1, ComboBox pv1) {
         HBox p = new HBox();
         p.getChildren().add(new Label(pV1));

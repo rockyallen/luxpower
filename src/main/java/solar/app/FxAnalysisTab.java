@@ -24,7 +24,7 @@ import solar.model.RecordFilter;
  */
 public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
 
-    private final FxSmoothingControl smoothing = new FxSmoothingControl();
+    private final FxSmoothingControl smoothing = new FxSmoothingControl(1);
 
     private FxSummaryTab summaryTab;
 
@@ -45,7 +45,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         xAxis.setUpperBound(365);
         xAxis.setTickUnit(30);
 
-        smoothing.getSmoothingProperty().addListener(new ChangeListener<Number>() {
+        smoothing.getProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
                 analyse();
                 plot();
@@ -55,7 +55,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         HBox p = new HBox();
         p.setPadding(FxMainAnalysis.INSETS);
         p.setSpacing(FxMainAnalysis.SPACING);
-        p.getChildren().addAll(new Text("Smoothing"), smoothing);
+        p.getChildren().addAll(smoothing);
         setTop(p);
 
 //        VBox v = new VBox();
@@ -147,7 +147,7 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
 
     @Override
     protected void plot() {
-        int sm = smoothing.getSmoothingValue();
+        int sm = smoothing.getValue();
 
         // Inefficient: plots all traces before deciding whether or not to display them.
         plot(tracePv1, totalPv1, sm);
@@ -197,5 +197,4 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
     public String toString() {
         return "Annual Energy graph";
     }
-
 }

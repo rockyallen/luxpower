@@ -14,10 +14,6 @@ import solar.model.Calculator.Weather;
  */
 public class DataStoreModel extends Task {
 
-    // Perfect inverter for comparison
-    // public static final Inverter perfectInverter = Inverter.valueOf("Perfect", "", 100000, 1.0);
-    // Total 9 kWh per day, guessed profile per hour in kW
-    public static final float[] HOURLY_CONSUMPTION = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 1.0f, 2.8f, 1.0f, 0.2f, 0.2f, 0.2f, 0.2f};
     // Include the effect of weather?
     private Calculator.Weather weather;
     private Components components;
@@ -83,7 +79,7 @@ public class DataStoreModel extends Task {
 
                         float maxAvailableWithoutBattery = (float) (components.getInv12().pout(pv1Power + pv2Power) + components.getInv12().pout(pv3Power));
 
-                        float consumptionPower = HOURLY_CONSUMPTION[solarHour] * 1000;
+                        float consumptionPower = (float) consumption.getDemand(solarHour);
 
                         if (maxAvailableWithoutBattery > consumptionPower) { // excess
                             // user first
@@ -158,5 +154,14 @@ public class DataStoreModel extends Task {
 
     public void setWeather(Weather weather) {
         this.weather = weather;
+    }
+    
+    private Consumption consumption = null;
+
+    /**
+     * @param consumption the consumption to set
+     */
+    public void setConsumption(Consumption consumption) {
+        this.consumption = consumption;
     }
 }

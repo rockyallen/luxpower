@@ -13,6 +13,10 @@ public class Calculator {
 
     private static final double TROPIC = 23.45; // degrees
     private static final double SPRINGEQUINOX = 81.0; // julian days
+    /**
+     * Calendar data. TODO: Remove. Use java.Date?
+     */
+    private static final int daysPerMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     private static final double DAYSPERYEAR = 365.0;
     private static final String[] MONTHNAMES = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -39,10 +43,6 @@ public class Calculator {
             = {0.057, 0.058, 0.060, 0.071, 0.097, 0.121, 0.134, 0.136, 0.122, 0.092, 0.073, 0.063, 0.057, 0.058};
     private static final double[] attmosphericAttenuations
             = {0.142, 0.142, 0.144, 0.156, 0.180, 0.196, 0.205, 0.207, 0.201, 0.177, 0.160, 0.149, 0.142, 0.142};
-    /**
-     * Calendar data. TODO: Remove. Use java.Date?
-     */
-    private static final int daysPerMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     public static int daysPerMonth(int month) {
         if (month < 0) {
@@ -220,10 +220,10 @@ public class Calculator {
      * @param sunElevation
      * @return irradiance W/m2
      */
-    private static double beamNormalIrradiance(double cn, double extraterrestialRadiance, double k, double sunElevation) {
+    public static double beamNormalIrradiance(double cn, double extraterrestialRadiance, double k, double sunElevation) {
         double exponent = -k / Math.sin(Math.toRadians(sunElevation));
         double temp = (cn * extraterrestialRadiance * Math.exp(exponent));
-        if (temp > 1353) {
+        if (temp > 1353) { 
             return 0.0;
         } else {
             return temp;
@@ -253,7 +253,7 @@ public class Calculator {
      * @param panelTilt Array angle to horizontal
      * @return sky diffuse radiation W/m2
      */
-    private double diffuseIrradiance(double diffusionFactor, double normalIrradiance, double panelTilt) {
+    public double diffuseIrradiance(double diffusionFactor, double normalIrradiance, double panelTilt) {
         return diffusionFactor * normalIrradiance * Math.pow(Math.cos(Math.toRadians(panelTilt / 2.0)), 2);
     }
 
@@ -267,7 +267,7 @@ public class Calculator {
      * @param panelTilt degrees
      * @return ground reflected radiation W/m2
      */
-    private double groundReflected(
+    public double groundReflected(
             double rho,
             double normalIrradiance,
             double sunElevation,
@@ -472,7 +472,7 @@ public class Calculator {
 
         @Override
         public String toString() {
-            return "NoWeater";
+            return "NoWeather";
         }
     }
 
@@ -1632,7 +1632,7 @@ public class Calculator {
 
         @Override
         public String toString() {
-            return "Raw weater " + Arrays.toString(scaleFactors);
+            return "Raw weather " + Arrays.toString(scaleFactors);
         }
     }
 
