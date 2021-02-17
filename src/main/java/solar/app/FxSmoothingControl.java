@@ -35,6 +35,7 @@ public class FxSmoothingControl extends VBox {
 
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
+                //System.out.println(new_val);
                     int odd = ((int) (new_val.floatValue()) / 2) * 2 + 1;
                     setLabel(odd);
                 if (!slider.isValueChanging()) {

@@ -22,11 +22,10 @@ import solar.model.Calculator;
 public class FxMonthControl extends VBox {
 
     private final Slider slider = new Slider(1, 12, 1);
-    private final Label label = new Label("                  ");
+    private final Label label = new Label("");
     private final IntegerProperty valueProperty = new SimpleIntegerProperty();
 
     public FxMonthControl(int initVal) {
-        //label.setPrefWidth(200);
         slider.setBlockIncrement(1);
         slider.setMajorTickUnit(1);
         slider.setMinorTickCount(0);
@@ -79,9 +78,9 @@ public class FxMonthControl extends VBox {
      * 
      * @return 
      */
-    public String getLabelText() {
-        return label.getText();
-    }
+//    public String getLabelText() {
+//        return label.getText();
+//    }
 
     public ReadOnlyIntegerProperty getProperty() {
         return valueProperty;

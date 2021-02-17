@@ -1,8 +1,17 @@
 package solar.model;
 
 import java.util.Arrays;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import javax.measure.quantity.Angle;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import tech.units.indriya.function.MultiplyConverter;
+import tech.units.indriya.quantity.Quantities;
+import tech.units.indriya.unit.TransformedUnit;
+import static tech.units.indriya.unit.Units.RADIAN;
+import static tech.units.indriya.unit.Units.SQUARE_METRE;
+import static tech.units.indriya.unit.Units.WATT;
 
 /**
  * Solar irradiance sums.
@@ -28,6 +37,11 @@ public class Calculator {
      * Sensible default values?
      */
     public static final double SURFACE_REFLECTIVITY = 0.2;
+
+    public static Unit<?> IRRADIANCE = WATT.divide(SQUARE_METRE);
+
+    public static final Quantity<?> STANDARD_IRRADIANCE = Quantities.getQuantity(1000.0, IRRADIANCE);
+    public static final Unit<Angle> DEGREE_ANGLE = new TransformedUnit<>("°", RADIAN, MultiplyConverter.of(180.0 / Math.PI));
     /**
      * Ordered by month
      */
@@ -223,7 +237,7 @@ public class Calculator {
     public static double beamNormalIrradiance(double cn, double extraterrestialRadiance, double k, double sunElevation) {
         double exponent = -k / Math.sin(Math.toRadians(sunElevation));
         double temp = (cn * extraterrestialRadiance * Math.exp(exponent));
-        if (temp > 1353) { 
+        if (temp > 1353) {
             return 0.0;
         } else {
             return temp;

@@ -6,6 +6,29 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <dependencies>
+        <dependency>
+            <groupId>javax.measure</groupId>
+            <artifactId>unit-api</artifactId>
+            <version>2.1.2</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/tec.uom.lib/uom-lib-common -->
+        <dependency>
+            <groupId>tec.uom.lib</groupId>
+            <artifactId>uom-lib-common</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.units</groupId>
+            <artifactId>indriya</artifactId>
+            <version>2.1.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>        
+        
         <!-- POMs don't seem to work in NetBeans Maven. Load them directly. -->
         <!-- https://bintray.com/asciidoctor/maven/asciidoctorj-api/view/general -->
         <dependency>

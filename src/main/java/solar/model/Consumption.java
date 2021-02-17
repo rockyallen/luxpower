@@ -6,8 +6,8 @@ package solar.model;
  */
 public class Consumption {
 
-        // Total 9 kWh per day, guessed profile per hour in kW
-    public static final float[] HOURLY_CONSUMPTION = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 1.0f, 2.8f, 1.0f, 0.2f, 0.2f, 0.2f, 0.2f};
+        // Total 8 kWh per day, guessed profile per hour in kW
+    public static final float[] HOURLY_CONSUMPTION = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 1.0f, 1.8f, 1.0f, 0.2f, 0.2f, 0.2f, 0.2f};
 
     /**
      * Instantaneous power demand in Watts

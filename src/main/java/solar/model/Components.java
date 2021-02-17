@@ -8,6 +8,9 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import static tech.units.indriya.AbstractUnit.ONE;
+import tech.units.indriya.quantity.Quantities;
+import static tech.units.indriya.unit.Units.SQUARE_METRE;
 
 /**
  * Database of components that can be chosen from in the model. Also has some
@@ -33,12 +36,35 @@ public class Components {
     // Array of 10 JAM60S10 340/MR on house East and West
     // House angle measured from google maps as 2.0 degrees
     // Tilt estimated from H2 ECO site visit
-    private SolarArray pv1 = new SolarArray("West", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 92.0, 20.0 / 100, defaultLatitude, defaultLongitude, false, false);
-    private SolarArray pv2 = new SolarArray("East", "10 off 340 W", 10 * 1.669 * 0.996, 32.0, 272.0, 20.0 / 100,  defaultLatitude, defaultLongitude, false, false);
+    private SolarArray pv1 = new SolarArray("West", "10 off 340 W",
+            Quantities.getQuantity(10 * 1.669 * 0.996, SQUARE_METRE),
+            Quantities.getQuantity(32.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(92.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(20.0 / 100, ONE),
+            Quantities.getQuantity(defaultLatitude, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(defaultLongitude, Calculator.DEGREE_ANGLE),
+            false, false);
+
+    private SolarArray pv2 = new SolarArray("East", "10 off 340 W",
+            Quantities.getQuantity(10 * 1.669 * 0.996, SQUARE_METRE),
+            Quantities.getQuantity(32.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(272.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(20.0 / 100, ONE),
+            Quantities.getQuantity(defaultLatitude, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(defaultLongitude, Calculator.DEGREE_ANGLE),
+            false, false);
     // Array of 9 PV-TD185MF5 on garage
     // Angle measured from google maps as 2.0 degrees
     // Tilt from memory of design
-    private SolarArray pv3 = new SolarArray("South", "9 off 185 W", 9 * 1.65 * 0.83, 35.0, 2.0, 13.4 / 100,  defaultLatitude, defaultLongitude, false, false);
+    private SolarArray pv3 = new SolarArray("South", "9 off 185 W",
+            Quantities.getQuantity(9 * 1.65 * 0.83, SQUARE_METRE),
+            Quantities.getQuantity(35.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(2.0, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(13.4 / 100, ONE),
+            Quantities.getQuantity(defaultLatitude, Calculator.DEGREE_ANGLE),
+            Quantities.getQuantity(defaultLongitude, Calculator.DEGREE_ANGLE),
+            false, false);
+
     private Inverter inv12 = Inverter.valueOf("LUX Power", "", 3600.0, 0.96);
     private Inverter inv3 = Inverter.valueOf("LUX Power", "", 1200.0, 0.90);
     // Jan 2021, Octopus
@@ -104,16 +130,17 @@ public class Components {
                     row = sheet.getRow(r);
                     String name = row.getCell(0).getStringCellValue();
                     if (!"".equals(name)) {
+
                         arrays.put(name,
                                 new SolarArray(
                                         name,
                                         row.getCell(1).getStringCellValue(),
-                                        row.getCell(2).getNumericCellValue(),
-                                        row.getCell(3).getNumericCellValue(),
-                                        row.getCell(4).getNumericCellValue(),
-                                        row.getCell(5).getNumericCellValue(),
-                                        row.getCell(6).getNumericCellValue(),
-                                        row.getCell(7).getNumericCellValue(),
+                                        Quantities.getQuantity(row.getCell(2).getNumericCellValue(), SQUARE_METRE),
+                                        Quantities.getQuantity(row.getCell(3).getNumericCellValue(), Calculator.DEGREE_ANGLE),
+                                        Quantities.getQuantity(row.getCell(4).getNumericCellValue(), Calculator.DEGREE_ANGLE),
+                                        Quantities.getQuantity(row.getCell(5).getNumericCellValue(), ONE),
+                                        Quantities.getQuantity(row.getCell(6).getNumericCellValue(), Calculator.DEGREE_ANGLE),
+                                        Quantities.getQuantity(row.getCell(7).getNumericCellValue(), Calculator.DEGREE_ANGLE),
                                         row.getCell(8).getBooleanCellValue(),
                                         row.getCell(9).getBooleanCellValue()
                                 ));

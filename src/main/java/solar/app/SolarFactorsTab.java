@@ -54,7 +54,7 @@ public class SolarFactorsTab extends BorderPane {
         p.setPadding(FxMainAnalysis.INSETS);
         p.getChildren().addAll(sc);
         setCenter(p);
-        
+
         plot();
     }
 
@@ -66,10 +66,10 @@ public class SolarFactorsTab extends BorderPane {
         diffusionTrace.getData().clear();
         attenuationTrace.getData().clear();
         for (int dayNumber = 0; dayNumber < 365; dayNumber++) {
-            smoothedWeatherTrace.getData().add(new XYChart.Data(dayNumber+1, Weather.SMOOTHEDWEATHER.getWeatherFactor(dayNumber)));
-            rawWeatherTrace.getData().add(new XYChart.Data(dayNumber+1, Weather.RAWWEATHER.getWeatherFactor(dayNumber)));
-            diffusionTrace.getData().add(new XYChart.Data(dayNumber+1, calculator.getDiffusion(dayNumber)));
-            attenuationTrace.getData().add(new XYChart.Data(dayNumber+1, calculator.getAttenuation(dayNumber)));
+            smoothedWeatherTrace.getData().add(new XYChart.Data(dayNumber + 1, Weather.SMOOTHEDWEATHER.getWeatherFactor(dayNumber)));
+            rawWeatherTrace.getData().add(new XYChart.Data(dayNumber + 1, Weather.RAWWEATHER.getWeatherFactor(dayNumber)));
+            diffusionTrace.getData().add(new XYChart.Data(dayNumber + 1, calculator.getDiffusion(dayNumber)));
+            attenuationTrace.getData().add(new XYChart.Data(dayNumber + 1, calculator.getAttenuation(dayNumber)));
         }
     }
 

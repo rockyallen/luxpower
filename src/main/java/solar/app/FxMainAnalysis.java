@@ -39,6 +39,7 @@ public class FxMainAnalysis extends Application {
         SolarTab solar = new SolarTab();
         SolarFactorsTab solarFactors = new SolarFactorsTab();
         Insolation solarIrradiance = new Insolation();
+DailyInsolation dailyInsolation = new DailyInsolation();
 
         importTab.addListener(power);
         importTab.addListener(energy);
@@ -51,7 +52,8 @@ public class FxMainAnalysis extends Application {
         makeTab(tabPane, "Summary", summary, "Tabulated monthly results");
         makeTab(tabPane, "Sun position", solar, "Solar position by month");
         makeTab(tabPane, "Attenuation", solarFactors, "Solar irradiance reduction factors");
-        makeTab(tabPane, "Irradiance", solarIrradiance, "Solar irradiance");
+        makeTab(tabPane, "Irradiance daily", solarIrradiance, "Solar irradiance");
+        makeTab(tabPane, "Irradiance hourly", dailyInsolation, "Solar irradiance daily");
 
         VBox vBox = new VBox(tabPane);
         vBox.setPrefSize(1500, 1000);
