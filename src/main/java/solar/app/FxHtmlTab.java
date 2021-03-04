@@ -9,7 +9,8 @@ import javafx.scene.web.WebView;
 
 
 /**
- *
+ * Simple tabpane to display HTML in a vertically scrolling window.
+ * 
  * @author rocky
  */
 public class FxHtmlTab extends BorderPane {
@@ -31,8 +32,8 @@ public class FxHtmlTab extends BorderPane {
         setText("<p>Error</p>");
         setCenter(p);
 
-        URL css = getClass().getResource("style.css");
-        webView.getEngine().setUserStyleSheetLocation(css.toString());
+//        URL css = getClass().getResource("style.css");
+//        webView.getEngine().setUserStyleSheetLocation(css.toString());
     }
     
     protected final void setText(String html)

@@ -10,7 +10,10 @@ import java.util.logging.Logger;
 import javafx.scene.web.WebView;
 
 /**
- *
+ * Display user guide in an HTML tab.
+ * 
+ * @design Generate on-the-fly from ASciidoctor? No-quicker to store HTML resource in jar file.
+ * 
  * @author rocky
  */
 public class FxIntroTab extends FxHtmlTab {

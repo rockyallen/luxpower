@@ -5,20 +5,22 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Fluent style reductive filter for records.
+ * Fluent style reductive filter for records.eg to get the records for 10AM-11AM during May:
  *
- * eg to get the records for 10AM-11AM during May:
  *
+ * @param <E>
  * @pre List<DataStore.Record> f = new
  * RecordFilter(OriginalData).endOfDay().hour(10).get();
  *
  * All filter method return a new list (the original list is NEVER changed), but
  * records are added without copying.
  *
- * This is (probably?) not very efficient compared to in-place filtering, but it
+ * @design This is (probably?) not very efficient compared to in-place filtering, but it
  * lets you reuse partial outputs, eg do end-of-day filtering once, then use the
  * result many times to filter into month groups.
  *
+ * @threadsafety Not thread safe
+ * 
  * @author rocky
  */
 public class RecordFilter<E extends DateProvider> {
@@ -26,8 +28,7 @@ public class RecordFilter<E extends DateProvider> {
     private List<E> current = new ArrayList<>();
 
     /**
-     * @param recs MUST be sorted by ascending DataStore.Record.date.
-     * @param recs
+     * @param recs MUST be sorted by ascending Record.date.
      */
     public RecordFilter(Collection<E> recs) {
         current.addAll(recs);
@@ -52,19 +53,19 @@ public class RecordFilter<E extends DateProvider> {
             if (lastRecord == null) {
                 lastRecord = r;
                 switch (p) {
-                    case DAY:
+                    case Day:
                         lastTime = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate());
                         break;
-                    case WEEK:
-                        lastTime = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 52;
+                    case Week:
+                        lastTime = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 7;
                         break;
-                    case DATE:
+                    case Date:
                         lastTime = r.getDate().getDate();
                         break;
-                    case MONTH:
+                    case Month:
                         lastTime = r.getDate().getMonth();
                         break;
-                    case HOUR:
+                    case Hour:
                         lastTime = r.getDate().getHours();
                         break;
                     default:
@@ -74,19 +75,19 @@ public class RecordFilter<E extends DateProvider> {
             // all other records
             int day;
             switch (p) {
-                case DAY:
+                case Day:
                     day = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate());
                     break;
-                case WEEK:
+                case Week:
                     day = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 52;
                     break;
-                case DATE:
+                case Date:
                     day = r.getDate().getDate();
                     break;
-                case MONTH:
+                case Month:
                     day = r.getDate().getMonth();
                     break;
-                case HOUR:
+                case Hour:
                     day = r.getDate().getHours();
                     break;
                 default:
@@ -119,25 +120,25 @@ public class RecordFilter<E extends DateProvider> {
      * @return
      */
     public RecordFilter period(int i, Period p) {
-        if (p == Period.ALL) {
+        if (p == Period.All) {
         } else {
             List<E> result = new ArrayList<>();
             for (E r : current) {
                 int is;
                 switch (p) {
-                    case MONTH:
+                    case Month:
                         is = r.getDate().getMonth();
                         break;
-                    case WEEK:
-                        is = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 52;
+                    case Week:
+                        is = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate()) / 7;
                         break;
-                    case DAY:
+                    case Day:
                         is = Calculator.dayNumber(r.getDate().getMonth(), r.getDate().getDate());
                         break;
-                    case DATE:
+                    case Date:
                         is = r.getDate().getDate();
                         break;
-                    case HOUR:
+                    case Hour:
                         is = r.getDate().getHours();
                         break;
                     default:

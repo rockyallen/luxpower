@@ -9,12 +9,11 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.TreeSet;
-import javafx.concurrent.Task;
 
 /**
- * Java database for the luxpower exports.
+ * Java database for the luxpower export files.
  *
- * NB Got records are only guaranteed to be sorted by increasing date if the put list was.
+ * NB Returned records are only guaranteed to be sorted by increasing date if the put list was.
  *
  * @author rocky
  */

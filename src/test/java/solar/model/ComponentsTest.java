@@ -42,8 +42,8 @@ public class ComponentsTest {
         File file = new File("components.xls");
         Components instance = new Components();
         assertTrue(instance.load(file));
-        assertEquals(3,instance.getArrays().size());
-        assertEquals(3,instance.getBatteries().size());
-        assertEquals(3,instance.getInverters().size());
+        assertTrue(instance.getArrays().size()>0);
+        assertTrue(instance.getBatteries().size()>0);
+        assertTrue(instance.getInverters().size()>0);
     }
 }

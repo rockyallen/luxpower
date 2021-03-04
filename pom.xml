@@ -6,6 +6,29 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <dependencies>
+        <dependency>
+            <groupId>javax.measure</groupId>
+            <artifactId>unit-api</artifactId>
+            <version>2.1.2</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/tec.uom.lib/uom-lib-common -->
+        <dependency>
+            <groupId>tec.uom.lib</groupId>
+            <artifactId>uom-lib-common</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.units</groupId>
+            <artifactId>indriya</artifactId>
+            <version>2.1.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>        
+        
         <!-- POMs don't seem to work in NetBeans Maven. Load them directly. -->
         <!-- https://bintray.com/asciidoctor/maven/asciidoctorj-api/view/general -->
         <dependency>
@@ -102,6 +125,7 @@
     </dependencies>
     
     <build>
+       
         <resources>
             <resource>
                 <directory>resources</directory>
@@ -110,13 +134,143 @@
                 </includes>
             </resource>
         </resources>
+               
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/libs
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>libs/</classpathPrefix>
+                            <mainClass>
+                                solar.app.DummyMain
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>2.1.0</version> 
+                <configuration>
+                    <resources>
+                        <resource>
+                            <directory>.</directory>
+                            <exclude>**/*.*</exclude>                                      
+                        </resource>
+                    </resources>
+                    <sourceDirectory>.</sourceDirectory>
+                    <outputDirectory>resources</outputDirectory>
+                    <sourceDocumentName>README.adoc</sourceDocumentName>
+                    <backend>html</backend>
+                    <doctype>article</doctype>
+                    <attributes>
+                        <stylesheet>my-theme.css</stylesheet>
+                    </attributes>
+                </configuration>   
+                <executions>
+                    <execution>
+                        <id>output-html</id>              
+                        <phase>generate-resources</phase> 
+                        <goals>
+                            <goal>process-asciidoc</goal> 
+                        </goals>
+                    </execution>
+                </executions>            
+            </plugin>
+                        
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.6</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
     </build>
-     
-    
+         
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+                    <show>public</show>
+                    <tags>threadsafety</tags>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.6</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
     <name>solar-app</name>
+ 
+ 
+ 
+    <profiles>
+        <profile>
+            <id>test</id>
+            <properties>
+                <env>test</env>
+                <gebEnv>test</gebEnv>
+                <jacoco.skip>false</jacoco.skip>
+                <maven.test.skip>false</maven.test.skip>
+                <skip.unit.tests>false</skip.unit.tests>
+            </properties>
+        </profile> 
+    </profiles>
+ 
 </project>

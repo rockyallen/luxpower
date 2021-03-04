@@ -1,7 +1,9 @@
 package solar.model;
 
 /**
- * Efficiency model is Ploss = parasiticpower + I^2 R.
+ * Efficiency model is: Ploss = parasiticpower + I^2 R.
+ *
+ * @threadsafety Immutable
  *
  * @author rocky
  */
@@ -69,6 +71,6 @@ public class Inverter {
 
     @Override
     public String toString() {
-        return String.format("Inverter: name='%s' power=%4.0f parasitic=%4.1f resistance=%3.2f", name, inverterExportLimit, parasiticPower, resistance);
+        return String.format("Inverter: name='%s' power=%4.0f W parasitic=%4.1f W resistance=%3.2f Ohm", name, inverterExportLimit, parasiticPower, resistance);
     }
 }

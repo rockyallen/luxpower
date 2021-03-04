@@ -1,13 +1,15 @@
 :experimental:
-
+:data-uri:
+:imagesdir:
 = Solar PV Analysis and Modelling Tool
 
 == Introduction
 
-Analysis reads the .XLS files produced by Lux Power and graphs the power and energy from the system through the day and year.
-The modelling uses standard formulae to predict the same from the system description.
+Analysis reads the .XLS files produced by the Lux Power export, and graphs the power and energy from the system through the day and year.
 
-In both cases, it calculates the following measures of performance:
+Modelling uses standard equations to predict the same from the system description (https://www.pveducation.org/pvcdrom/properties-of-sunlight/calculation-of-solar-insolation).
+
+In both cases, the tool calculates the following measures of performance:
 
 Capacity factor:: 
 Actual energy produced divided by the rated capacity. 
@@ -27,14 +29,7 @@ Battery efficiency::
 Discharge energy divided by the charge energy for a particular period. 
 This is also known as the round-trip efficiency. 90% is good.
 
-The modelling tabs (M) use standard formulae to predict the output  (power and energy) from the system by through the day and year.
-
-The main use is to compare different configurations to optimise placement, inverter choice etc. 
-You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
-
-== Usage
-
-=== Analysis
+== Viewing downloaded data
 
 . Download the data to any folder, and note where the folder is.
 Put each year's data in a separate folder: the tool can only display 1 year at a time.
@@ -43,7 +38,7 @@ Put each year's data in a separate folder: the tool can only display 1 year at a
 
 . On the import tab, use btn:[Import], and find the data folder when asked.
 
-. When the data has loaded, use btn:[Analyse] to populate the other tabs.
+. When the data has loaded, the other tabs will be automatically populated.
 
 . Activate the Power, Energy and Battery tabs as required.
 
@@ -54,15 +49,103 @@ Put each year's data in a separate folder: the tool can only display 1 year at a
 You only need to use btn:[Import] the first time you use the app, or if you have changed any files to the data folder.
 Otherwise use btn:[Cache] which will load much faster.
 
-=== Modelling
+=== Interpretation of data file column headings
+
+I had to make some assumptions about the data fields in the file, since I can't find any documentation.
+See xref:fig-headings[].
+
+[[fig-headings]]
+.Interpretation of data file column headings
+[ditaa]
+....
+ +----------+   +-----------+   +-----------+  
+ |   PV 1   |   |   PV 2    |   |    PV 3   |
+ |          |   |           |   |           |
+ |          |   |           |   |           |
+ +----------+   +-----------+   +-----------+
+       |Ppv1          |Ppv2           |Ppv3       
+       +--------------+---------------+
+                      |               
+                      v               
+                +-----------+                   +-----------+  
+    pDisCharge  | Inverter  |Pinv        Pload  |    Load   |
+       +------->|           |---------+-------->|           |  
+       |        |           |         |         |           |  
+       |        +-----------+         |         +-----------+  
+       |              |               |pToGrid        ^pToUser
+       |              |pCharge        |               |
+ +-----------+        |               |         +-----------+  
+ |  Battery  |        |               |         |    Grid   |
+ |           |<-------+               +-------->|           |  
+ |           |                                  |           |  
+ +-----------+                                  +-----------+  
+....
+
+The inverter can measure everything directly except for *Pload*, so I assume it is calculated from **Pinv + PToUser - PToGrid**.
+
+In my setup, PV 3 is attached to a separate inverter and connected as xref:fig-headingsmodelled[].
+
+
+[[fig-headingsmodelled]]
+.Modified connections
+[ditaa]
+....
+ +----------+   +-----------+   +-----------+      +-----------+  
+ |   PV 1   |   |   PV 2    |   |    Inv3   | Ppv3 |    PV 3   |
+ |          |   |           |   |           |<-----|           |  
+ |          |   |           |   |           |      |           |  
+ +----------+   +-----------+   +-----------+      +-----------+  
+       |Ppv1          |Ppv2           |Pinv3       
+       +--------------+               |
+                      |               |
+                      v               |
+                +-----------+         |         +-----------+  
+    pDisCharge  | Inverter  |Pinv     v  Pload  |    Load   |
+       +------->|           |---------+-------->|           |  
+       |        |           |         |         |           |  
+       |        +-----------+         |         +-----------+  
+       |              |               |pToGrid        ^pToUser
+       |              |pCharge        |               |
+ +-----------+        |               |         +-----------+  
+ |  Battery  |        |               |         |    Grid   |
+ |           |<-------+               +-------->|           |  
+ |           |                                  |           |  
+ +-----------+                                  +-----------+  
+....
+
+To represent this, if **Estimate PV3** is selected when you import the data:
+
+- *Ppv3* is calculated as 27% of **Ppv1 + Ppv2**
+
+- *epv3day* is calculated as 27% of **epv1day + epv2day**
+
+- *PInv* is increased by *Ppv3*
+
+- *eInvday* is increased by 27%
+
+- *Pload* is recalculated as **Pinv + PToUser - PToGrid**
+
+If you only have the single inverter, leave **Estimate PV3** unselected.
+
+== Modelling
+
+The main use of the modelling is to compare different configurations to optimise placement, inverter choice etc. 
+You can also compare the model to the actual output to possibly detect hardware problems (if you are lucky).
+
+The default configuration matches my particular setup. 
+If yours is different or you wish to experiment, edit the file "components.xls" following the examples.
+This file is read at startup and used to populate the dropdowns on the modelling tab.
+
+. If necessary, edit the file "components.xls" in the app folder.
 
 . Start the app.
-Press btn:[Model] then btn:[Analyse].
+
+. On the Data tab, configure the system to be modelled by selecting the components from the drop-downs.
+
+. Press btn:[Model].
 
 . Activate the Power, Energy and Summary tabs as required.
 
 . Use the Month sliders to scroll through the year a month at a time.
 
-. The model is only for the single configuration shown. 
-There are no changes you can make (TBD).
-
+. To model a different configuration, choose different components and press btn:[Model] again.

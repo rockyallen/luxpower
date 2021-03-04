@@ -3,7 +3,9 @@ package solar.model;
 import java.util.Date;
 
 /**
+ * Date+number
  *
+ * @threadsafety Immutable
  * @author rocky
  */
 public class DatedValue implements DateProvider {

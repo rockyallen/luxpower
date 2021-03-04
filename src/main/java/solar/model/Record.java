@@ -3,6 +3,11 @@ package solar.model;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Row from the LuxPower export spreadsheets.
+ * 
+ * @author rocky
+ */
 public class Record implements Serializable, Comparable, DateProvider {
 
     private static final long serialVersionUID = 365777397454380L;

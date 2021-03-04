@@ -1,7 +1,6 @@
 package solar.app;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -11,27 +10,27 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import solar.model.Components;
 import solar.model.Inverter;
-import solar.model.SystemData;
+import solar.model.Listener;
+import solar.model.Record;
 
 /**
- *
+ * Graph inverter efficiencies for interest
+ * 
  * @author rocky
  */
-public class FxInverterTab extends BorderPane {
+public class FxInverterTab extends BorderPane implements Listener{
 
     private static final double MAXPOWER = 5000.0;
-    private final List<Inverter> inverters = new ArrayList<>();
     LineChart<Number, Number> sc;
 
     private final TextArea t = new TextArea();
+    private Components components;
 
     public FxInverterTab() {
 
         super();
-
-        inverters.add(SystemData.LuxPower);
-        inverters.add(SystemData.SunnyBoy);
 
         t.setPrefSize(1000, 200);
         HBox p = new HBox();
@@ -79,7 +78,7 @@ public class FxInverterTab extends BorderPane {
 //        importPanel.getOs().println("Number of batteries=" + SystemData.NBATTERIES);
 //        importPanel.getOs().println("Capacity of each battery=" + SystemData.BATTERY_CAPACITY);
 
-        for (Inverter inv : inverters) {
+        for (Inverter inv : components.getInverters().values()) {
             t.appendText(inv.toString() + "\n");
             XYChart.Series data = new XYChart.Series();
             data.setName(inv.name);
@@ -89,5 +88,10 @@ public class FxInverterTab extends BorderPane {
             }
             sc.getData().add(data);
         }
+    }
+
+    @Override
+    public void changed(Collection<Record> records, Components componentsList) {
+        this.components=componentsList;
     }
 }

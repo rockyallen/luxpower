@@ -57,22 +57,22 @@ public class RecordFilterTest {
         RecordFilter<DateProvider> instance = null;
 
         instance = new RecordFilter<>(input);
-        result = instance.period(9,Period.MONTH).result();
+        result = instance.period(9,Period.Month).result();
         assertEquals(0, result.size());
 
         instance = new RecordFilter<>(input);
-        result = instance.period(3,Period.MONTH).result();
+        result = instance.period(3,Period.Month).result();
         assertEquals(2, result.size());
         compareRecord(r2, result.get(0));
         compareRecord(r3, result.get(1));
 
         instance = new RecordFilter<>(input);
-        result = instance.period(1,Period.MONTH).result();
+        result = instance.period(1,Period.Month).result();
         assertEquals(1, result.size());
         compareRecord(r1, result.get(0));
 
         instance = new RecordFilter<>(input);
-        result = instance.period(5,Period.MONTH).result();
+        result = instance.period(5,Period.Month).result();
         assertEquals(1, result.size());
         compareRecord(r4, result.get(0));
     }
@@ -99,16 +99,16 @@ public class RecordFilterTest {
 
         instance = new RecordFilter<>(input);
 
-        result = instance.period(3,Period.MONTH).result();
+        result = instance.period(3,Period.Month).result();
         assertEquals(2, result.size());
         compareRecord(r2, result.get(0));
         compareRecord(r3, result.get(1));
 
-        result = instance.period(4,Period.HOUR).result();
+        result = instance.period(4,Period.Hour).result();
         assertEquals(1, result.size());
         compareRecord(r2, result.get(0));
 
-        result = instance.period(5,Period.MONTH).result();
+        result = instance.period(5,Period.Month).result();
         assertEquals(0, result.size());
     }
 
@@ -121,7 +121,7 @@ public class RecordFilterTest {
         input.add(makeRecord(new Date(121, 03, 05), 1, 0.5f));
         instance = new RecordFilter(input);
 
-        List<DateProvider> result = instance.endOfPeriod(Period.DAY).result();
+        List<DateProvider> result = instance.endOfPeriod(Period.Day).result();
         assertEquals(3, result.size());
     }
 
@@ -138,7 +138,7 @@ public class RecordFilterTest {
 
         instance = new RecordFilter<>(input);
 
-        List<DateProvider> result = instance.endOfPeriod(Period.DAY).result();
+        List<DateProvider> result = instance.endOfPeriod(Period.Day).result();
         assertEquals(3, result.size());
     }
 
@@ -159,7 +159,7 @@ public class RecordFilterTest {
         instance = new RecordFilter<>(input);
 
         // r1, r3
-        List<DateProvider> result = instance.endOfPeriod(Period.DAY).result();
+        List<DateProvider> result = instance.endOfPeriod(Period.Day).result();
         assertEquals(2, result.size());
         compareRecord(r1, result.get(0));
         compareRecord(r4, result.get(1));
