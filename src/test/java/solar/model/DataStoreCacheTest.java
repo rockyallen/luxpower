@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import tech.units.indriya.quantity.Quantities;
+import tech.units.indriya.unit.Units;
 
 /**
  *
@@ -106,7 +108,7 @@ public class DataStoreCacheTest {
         Record r1 = new Record();
         r1.setDate(date);
         r1.getDate().setHours(hour);
-        r1.seteChgDay(f);
+        r1.seteChgDay(Quantities.getQuantity(f,Units.JOULE));
         return r1;
     }
     

@@ -1,5 +1,16 @@
 package solar.model;
 
+import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.ElectricCurrent;
+import javax.measure.quantity.ElectricResistance;
+import javax.measure.quantity.Power;
+import static solar.model.SolarUnitsAndConstants.*;
+import static solar.model.SolarUnitsAndConstants.maximum;
+import static solar.model.SolarUnitsAndConstants.minimum;
+import static tech.units.indriya.AbstractUnit.ONE;
+import tech.units.indriya.ComparableQuantity;
+import static tech.units.indriya.unit.Units.*;
+
 /**
  * Efficiency model is: Ploss = parasiticpower + I^2 R.
  *
@@ -9,28 +20,26 @@ package solar.model;
  */
 public class Inverter {
 
-    public final double inverterExportLimit;
+    public final ComparableQuantity<Power> inverterExportLimit;
     // Ohms
-    public final double resistance;
+    public final ComparableQuantity<ElectricResistance> resistance;
     // Watts
-    public final double parasiticPower;
+    public final ComparableQuantity<Power> parasiticPower;
     // Descriptive name
     public final String name;
-
-    public static final double GRID_VOLTAGE = 240.0;
 
     /**
      *
      * @param name
-     * @param powerLimit Watts
-     * @param parasiticPowerLoss Watts
-     * @param resistance Ohms (assumes 240V output)
+     * @param powerLimit
+     * @param parasiticPowerLoss
+     * @param resistance
      */
-    public Inverter(String name, String description, double powerLimit, double parasiticPowerLoss, double resistance) {
+    public Inverter(String name, String description, ComparableQuantity<Power> powerLimit, ComparableQuantity<Power> parasiticPowerLoss, ComparableQuantity<ElectricResistance> resistance) {
         this.name = name;
-        this.inverterExportLimit = powerLimit;
-        this.parasiticPower = parasiticPowerLoss;
-        this.resistance = resistance;
+        this.inverterExportLimit = powerLimit.to(WATT);
+        this.parasiticPower = parasiticPowerLoss.to(WATT);
+        this.resistance = resistance.to(OHM);
         if ("".equals(name)) {
             throw new IllegalArgumentException("name must not be blank");
         }
@@ -39,21 +48,34 @@ public class Inverter {
     /**
      * Convenience for the default model. Assume 1/2 the loss is due to
      * parasitic power, and 1/2 due to resistance (at 50% load)
-     *
+     * 
+     * UK grid output voltage is assumed.
+     * 
+     * Example:
+     * 1000 W max, 90% 1/2 load efficiency
+     * 
+     * total loss at 500 W = 90% * 500 W = 45 W, parasitic = 22.5 W ohmic at 1/2 load = 22.5 W.
+     * I at half load = (500/240), I^2 R = P, R = P/I^2 = 22.5/(500/240)^2 = 2.88 Ohm
+     * 
      * @param name Description
      * @param powerLimit Rated power output
      * @param halfLoadEfficiency Efficiency at half maximum output. Usually near
      * maximum and the same as the 'european' efficiency.
      * @return new Inverter
      */
-    public static Inverter valueOf(String name, String description, double powerLimit, double halfLoadEfficiency) {
-        double halfLoadPowerLoss = 0.5 * (1 - halfLoadEfficiency) * powerLimit;
-        double parasiticpower = halfLoadPowerLoss / 2.0;
+    public static Inverter valueOf(String name, String description, ComparableQuantity<Power> powerLimit, ComparableQuantity<Dimensionless> halfLoadEfficiency) {
 
-        double resistanceLoss = halfLoadPowerLoss - parasiticpower;
-        double IHalfLoad = (0.5 * powerLimit) / GRID_VOLTAGE;
-        double resistance = resistanceLoss / (IHalfLoad * IHalfLoad);
-        return new Inverter(name, description, powerLimit, parasiticpower, resistance);
+        if (halfLoadEfficiency.to(ONE).getValue().doubleValue() > 0.999) {
+            return new Inverter(name, description, powerLimit, ZERO_POWER, ZERO_RESISTANCE);
+        } else {
+            ComparableQuantity<Power> halfLoadPowerLoss = ONE_NUMBER.subtract(halfLoadEfficiency).multiply(powerLimit).multiply(0.5).asType(Power.class);
+            ComparableQuantity<Power> parasiticpower = halfLoadPowerLoss.divide(2);
+
+            ComparableQuantity<Power> resistanceLoss = halfLoadPowerLoss.subtract(parasiticpower);
+            ComparableQuantity<ElectricCurrent> IHalfLoad = powerLimit.divide(GRID_VOLTAGE).divide(2).asType(ElectricCurrent.class);
+            ComparableQuantity<ElectricResistance> resistance = resistanceLoss.divide(IHalfLoad.multiply(IHalfLoad)).asType(ElectricResistance.class);
+            return new Inverter(name, description, powerLimit, parasiticpower, resistance);
+        }
     }
 
     /**
@@ -62,15 +84,16 @@ public class Inverter {
      * @param pin Input power, Watts
      * @return Output power, Watts
      */
-    public double pout(double pin) {
-        double I = pin / GRID_VOLTAGE;
-        double ploss = parasiticPower + I * I * resistance;
-        double pout = Math.max(Math.min(inverterExportLimit, pin - ploss), 0);
+    public ComparableQuantity<Power> pout(ComparableQuantity<Power> pin) {
+        ComparableQuantity<ElectricCurrent> I = pin.divide(GRID_VOLTAGE).asType(ElectricCurrent.class);
+        ComparableQuantity<Power> resistiveloss = I.multiply(I).multiply(resistance).asType(Power.class);
+        ComparableQuantity<Power> ploss = parasiticPower.add(resistiveloss).asType(Power.class);
+        ComparableQuantity<Power> pout = maximum(minimum(inverterExportLimit, pin.subtract(ploss)), ZERO_POWER);
         return pout;
     }
 
     @Override
     public String toString() {
-        return String.format("Inverter: name='%s' power=%4.0f W parasitic=%4.1f W resistance=%3.2f Ohm", name, inverterExportLimit, parasiticPower, resistance);
+        return String.format("Inverter: name='%s' power=%s parasitic=%s resistance=%s", name, inverterExportLimit, parasiticPower, resistance);
     }
 }

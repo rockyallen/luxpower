@@ -73,18 +73,17 @@ public class FxAnalysisDailyTab extends FxAnalysisBaseTab implements Listener {
             RecordFilter<Record> filter = new RecordFilter<>(thisMonthRecords);
             List<Record> thisHour = filter.period(hour, Period.Hour).result();
             for (Record r : thisHour) {
-
-                totalPv1.add(new DatedValue(r.getDate(), r.getPpv1()));
-                totalPv2.add(new DatedValue(r.getDate(), r.getPpv2()));
-                totalPv3.add(new DatedValue(r.getDate(), r.getPpv3()));
-                totalCombined.add(new DatedValue(r.getDate(), r.getPpv1() + r.getPpv2() + r.getPpv3()));
-                totalInverter.add(new DatedValue(r.getDate(), r.getPinv()));
-                totalSelfUse.add(new DatedValue(r.getDate(), r.getpLoad() - r.getpToUser()));
-                totalExport.add(new DatedValue(r.getDate(), r.getpToGrid()));
-                totalImport.add(new DatedValue(r.getDate(), r.getpToUser()));
-                totalConsumption.add(new DatedValue(r.getDate(), r.getpLoad()));
-                totalCharge.add(new DatedValue(r.getDate(), r.getpCharge()));
-                totalDischarge.add(new DatedValue(r.getDate(), r.getpDisCharge()));
+                totalPv1.add(new DatedValue(r.getDate(), r.getPpv1().getValue().doubleValue()));
+                totalPv2.add(new DatedValue(r.getDate(), r.getPpv2().getValue().doubleValue()));
+                totalPv3.add(new DatedValue(r.getDate(), r.getPpv3().getValue().doubleValue()));
+                totalCombined.add(new DatedValue(r.getDate(), (r.getPpv1().add(r.getPpv2()).add(r.getPpv3())).getValue().doubleValue()));
+                totalInverter.add(new DatedValue(r.getDate(), r.getPinv().getValue().doubleValue()));
+                totalSelfUse.add(new DatedValue(r.getDate(), r.getpLoad().subtract(r.getpToUser()).getValue().doubleValue()));
+                totalExport.add(new DatedValue(r.getDate(), r.getpToGrid().getValue().doubleValue()));
+                totalImport.add(new DatedValue(r.getDate(), r.getpToUser().getValue().doubleValue()));
+                totalConsumption.add(new DatedValue(r.getDate(), r.getpLoad().getValue().doubleValue()));
+                totalCharge.add(new DatedValue(r.getDate(), r.getpCharge().getValue().doubleValue()));
+                totalDischarge.add(new DatedValue(r.getDate(), r.getpDisCharge().getValue().doubleValue()));
             }
             addPoint(tracePv1, totalPv1, hour, 0.001);
             addPoint(tracePv2, totalPv2, hour, 0.001);

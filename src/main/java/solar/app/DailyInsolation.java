@@ -17,7 +17,7 @@ import solar.model.Calculator;
  */
 public class DailyInsolation extends BorderPane {
 
-    private final Calculator calculator = new Calculator();
+    private final Calculator calculator =  Calculator.getInstance();
     protected final XYChart.Series extraterrestial = new XYChart.Series();
     protected final XYChart.Series beamNormalAtSeaLevel = new XYChart.Series();
     protected final XYChart.Series direct = new XYChart.Series();

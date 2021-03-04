@@ -2,10 +2,18 @@ package solar.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.measure.Quantity;
+import javax.measure.quantity.ElectricPotential;
+import javax.measure.quantity.Energy;
+import javax.measure.quantity.Power;
+import static solar.model.SolarUnitsAndConstants.KILO_WATT_HOUR;
+import tech.units.indriya.quantity.Quantities;
+import static tech.units.indriya.unit.Units.VOLT;
+import static tech.units.indriya.unit.Units.WATT;
 
 /**
  * Row from the LuxPower export spreadsheets.
- * 
+ *
  * @author rocky
  */
 public class Record implements Serializable, Comparable, DateProvider {
@@ -101,10 +109,34 @@ public class Record implements Serializable, Comparable, DateProvider {
         return getDate() + ": " + getSoc();
     }
 
+    /**
+     * Non-standard implementation. 
+     * 
+     * Only care about the date.
+     * 
+     * @param t
+     * 
+     * @return 
+     */
     @Override
     public int compareTo(Object t) {
         Record that = (Record) t;
         return this.getDate().compareTo(that.getDate());
+    }
+
+    /**
+     * Non-standard implementation. 
+     * 
+     * Only care about the date.
+     * 
+     * @param t
+     * 
+     * @return 
+     */
+    @Override
+    public boolean equals(Object t) {
+        Record that = (Record) t;
+        return this.getDate().equals(that.getDate());
     }
 
     /**
@@ -149,60 +181,36 @@ public class Record implements Serializable, Comparable, DateProvider {
         this.Status = Status;
     }
 
-    /**
-     * @return the vpv1
-     */
-    public float getVpv1() {
-        return vpv1;
+    public Quantity<ElectricPotential> getVpv1() {
+        return Quantities.getQuantity(vpv1, VOLT);
     }
 
-    /**
-     * @param vpv1 the vpv1 to set
-     */
-    public void setVpv1(float vpv1) {
-        this.vpv1 = vpv1;
+    public void setVpv1(Quantity<ElectricPotential> v) {
+        this.vpv1 = v.to(VOLT).getValue().floatValue();
     }
 
-    /**
-     * @return the vpv2
-     */
-    public float getVpv2() {
-        return vpv2;
+    public Quantity<ElectricPotential> getVpv2() {
+        return Quantities.getQuantity(vpv2, VOLT);
     }
 
-    /**
-     * @param vpv2 the vpv2 to set
-     */
-    public void setVpv2(float vpv2) {
-        this.vpv2 = vpv2;
+    public void setVpv2(Quantity<ElectricPotential> v) {
+        this.vpv2 = v.to(VOLT).getValue().floatValue();
     }
 
-    /**
-     * @return the vpv3
-     */
-    public float getVpv3() {
-        return vpv3;
+    public Quantity<ElectricPotential> getVpv3() {
+        return Quantities.getQuantity(vpv3, VOLT);
     }
 
-    /**
-     * @param vpv3 the vpv3 to set
-     */
-    public void setVpv3(float vpv3) {
-        this.vpv3 = vpv3;
+    public void setVpv3(Quantity<ElectricPotential> v) {
+        this.vpv3 = v.to(VOLT).getValue().floatValue();
     }
 
-    /**
-     * @return the vBat
-     */
-    public float getvBat() {
-        return vBat;
+    public Quantity<ElectricPotential> getVBat() {
+        return Quantities.getQuantity(vBat, VOLT);
     }
 
-    /**
-     * @param vBat the vBat to set
-     */
-    public void setvBat(float vBat) {
-        this.vBat = vBat;
+    public void setVbat(Quantity<ElectricPotential> v) {
+        this.vBat = v.to(VOLT).getValue().floatValue();
     }
 
     /**
@@ -219,172 +227,156 @@ public class Record implements Serializable, Comparable, DateProvider {
         this.soc = soc;
     }
 
-    /**
-     * @return the ppv1
-     */
-    public float getPpv1() {
-        return ppv1;
+    public Quantity<Power> getPpv1() {
+        return Quantities.getQuantity(ppv1, WATT);
     }
 
-    /**
-     * @param ppv1 the ppv1 to set
-     */
-    public void setPpv1(float ppv1) {
-        this.ppv1 = ppv1;
+    public void setPpv1(Quantity<Power> p) {
+        this.ppv1 = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the ppv2
-     */
-    public float getPpv2() {
-        return ppv2;
+    public Quantity<Power> getPpv2() {
+        return Quantities.getQuantity(ppv2, WATT);
     }
 
-    /**
-     * @param ppv2 the ppv2 to set
-     */
-    public void setPpv2(float ppv2) {
-        this.ppv2 = ppv2;
+    public void setPpv2(Quantity<Power> p) {
+        this.ppv2 = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the ppv3
-     */
-    public float getPpv3() {
-        return ppv3;
+    public Quantity<Power> getPpv3() {
+        return Quantities.getQuantity(ppv3, WATT);
     }
 
-    /**
-     * @param ppv3 the ppv3 to set
-     */
-    public void setPpv3(float ppv3) {
-        this.ppv3 = ppv3;
+    public void setPpv3(Quantity<Power> p) {
+        this.ppv3 = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the ePv1Day
-     */
-    public float getePv1Day() {
-        return ePv1Day;
+    public Quantity<Power> getpToGrid() {
+        return Quantities.getQuantity(pToGrid, WATT);
     }
 
-    /**
-     * @param ePv1Day the ePv1Day to set
-     */
-    public void setePv1Day(float ePv1Day) {
-        this.ePv1Day = ePv1Day;
+    public void setpToGrid(Quantity<Power> p) {
+        this.pToGrid = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the ePv2Day
-     */
-    public float getePv2Day() {
-        return ePv2Day;
+    public Quantity<Power> getpToUser() {
+        return Quantities.getQuantity(pToUser, WATT);
     }
 
-    /**
-     * @param ePv2Day the ePv2Day to set
-     */
-    public void setePv2Day(float ePv2Day) {
-        this.ePv2Day = ePv2Day;
+    public void setpToUser(Quantity<Power> p) {
+        this.pToUser = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the ePv3Day
-     */
-    public float getePv3Day() {
-        return ePv3Day;
+    public Quantity<Power> getPinv() {
+        return Quantities.getQuantity(pinv, WATT);
     }
 
-    /**
-     * @param ePv3Day the ePv3Day to set
-     */
-    public void setePv3Day(float ePv3Day) {
-        this.ePv3Day = ePv3Day;
+    public void setPinv(Quantity<Power> p) {
+        this.pinv = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the eChgDay
-     */
-    public float geteChgDay() {
-        return eChgDay;
+    public Quantity<Power> getpCharge() {
+        return Quantities.getQuantity(pCharge, WATT);
     }
 
-    /**
-     * @param eChgDay the eChgDay to set
-     */
-    public void seteChgDay(float eChgDay) {
-        this.eChgDay = eChgDay;
+    public void setpCharge(Quantity<Power> p) {
+        this.pCharge = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the eDisChgDay
-     */
-    public float geteDisChgDay() {
-        return eDisChgDay;
+    public Quantity<Power> getpDisCharge() {
+        return Quantities.getQuantity(pDisCharge, WATT);
     }
 
-    /**
-     * @param eDisChgDay the eDisChgDay to set
-     */
-    public void seteDisChgDay(float eDisChgDay) {
-        this.eDisChgDay = eDisChgDay;
+    public void setpDisCharge(Quantity<Power> p) {
+        this.pDisCharge = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the eToGridDay
-     */
-    public float geteToGridDay() {
-        return eToGridDay;
+    public Quantity<Power> getpLoad() {
+        return Quantities.getQuantity(pLoad, WATT);
     }
 
-    /**
-     * @param eToGridDay the eToGridDay to set
-     */
-    public void seteToGridDay(float eToGridDay) {
-        this.eToGridDay = eToGridDay;
+    public void setpLoad(Quantity<Power> p) {
+        this.pLoad = p.to(WATT).getValue().floatValue();
     }
 
-    /**
-     * @return the eToUserDay
-     */
-    public float geteToUserDay() {
-        return eToUserDay;
+    public Quantity<Energy> getePv1Day() {
+        return Quantities.getQuantity(ePv1Day, KILO_WATT_HOUR);
     }
 
-    /**
-     * @param eToUserDay the eToUserDay to set
-     */
-    public void seteToUserDay(float eToUserDay) {
-        this.eToUserDay = eToUserDay;
+    public void setePv1Day(Quantity<Energy> e) {
+        this.ePv1Day = e.to(KILO_WATT_HOUR).getValue().floatValue();
     }
 
-    /**
-     * @return the eChgAll
-     */
-    public float geteChgAll() {
-        return eChgAll;
+    public Quantity<Energy> getePv2Day() {
+        return Quantities.getQuantity(ePv2Day, KILO_WATT_HOUR);
     }
 
-    /**
-     * @param eChgAll the eChgAll to set
-     */
-    public void seteChgAll(float eChgAll) {
-        this.eChgAll = eChgAll;
+    public void setePv2Day(Quantity<Energy> e) {
+        this.ePv2Day = e.to(KILO_WATT_HOUR).getValue().floatValue();
     }
 
-    /**
-     * @return the eDisChgAll
-     */
-    public float geteDisChgAll() {
-        return eDisChgAll;
+    public Quantity<Energy> getePv3Day() {
+        return Quantities.getQuantity(ePv3Day, KILO_WATT_HOUR);
     }
 
-    /**
-     * @param eDisChgAll the eDisChgAll to set
-     */
-    public void seteDisChgAll(float eDisChgAll) {
-        this.eDisChgAll = eDisChgAll;
+    public void setePv3Day(Quantity<Energy> e) {
+        this.ePv3Day = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteChgDay() {
+        return Quantities.getQuantity(eChgDay, KILO_WATT_HOUR);
+    }
+
+    public void seteChgDay(Quantity<Energy> e) {
+        this.eChgDay = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteDisChgDay() {
+        return Quantities.getQuantity(eDisChgDay, KILO_WATT_HOUR);
+    }
+
+    public void seteDisChgDay(Quantity<Energy> e) {
+        this.eDisChgDay = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteToGridDay() {
+        return Quantities.getQuantity(eToGridDay, KILO_WATT_HOUR);
+    }
+
+    public void seteToGridDay(Quantity<Energy> e) {
+        this.eToGridDay = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteToUserDay() {
+        return Quantities.getQuantity(eToUserDay, KILO_WATT_HOUR);
+    }
+
+    public void seteToUserDay(Quantity<Energy> e) {
+        this.eToUserDay = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteDisChgAll() {
+        return Quantities.getQuantity(eDisChgAll, KILO_WATT_HOUR);
+    }
+
+    public void seteDisChgAll(Quantity<Energy> e) {
+        this.eDisChgAll = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteChgAll() {
+        return Quantities.getQuantity(eChgAll, KILO_WATT_HOUR);
+    }
+
+    public void seteChgAll(Quantity<Energy> e) {
+        this.eChgAll = e.to(KILO_WATT_HOUR).getValue().floatValue();
+    }
+
+    public Quantity<Energy> geteInvDay() {
+        return Quantities.getQuantity(eInvDay, KILO_WATT_HOUR);
+    }
+
+    public void seteInvDay(Quantity<Energy> e) {
+        this.eInvDay = e.to(KILO_WATT_HOUR).getValue().floatValue();
     }
 
     void validate() {
@@ -392,103 +384,4 @@ public class Record implements Serializable, Comparable, DateProvider {
             throw new IllegalStateException("null date");
         }
     }
-
-    /**
-     * @return the pToGrid
-     */
-    public float getpToGrid() {
-        return pToGrid;
-    }
-
-    /**
-     * @param pToGrid the pToGrid to set
-     */
-    public void setpToGrid(float pToGrid) {
-        this.pToGrid = pToGrid;
-    }
-
-    /**
-     * @return the pToUser
-     */
-    public float getpToUser() {
-        return pToUser;
-    }
-
-    /**
-     * @param pToUser the pToUser to set
-     */
-    public void setpToUser(float pToUser) {
-        this.pToUser = pToUser;
-    }
-
-    /**
-     * @return the pinv
-     */
-    public float getPinv() {
-        return pinv;
-    }
-
-    /**
-     * @param pinv the pinv to set
-     */
-    public void setPinv(float pinv) {
-        this.pinv = pinv;
-    }
-
-    /**
-     * @return the eInvDay
-     */
-    public float geteInvDay() {
-        return eInvDay;
-    }
-
-    /**
-     * @param eInvDay the eInvDay to set
-     */
-    public void seteInvDay(float eInvDay) {
-        this.eInvDay = eInvDay;
-    }
-
-    /**
-     * @return the pCharge
-     */
-    public float getpCharge() {
-        return pCharge;
-    }
-
-    /**
-     * @param pCharge the pCharge to set
-     */
-    public void setpCharge(float pCharge) {
-        this.pCharge = pCharge;
-    }
-
-    /**
-     * @return the pDisCharge
-     */
-    public float getpDisCharge() {
-        return pDisCharge;
-    }
-
-    /**
-     * @param pDisCharge the pDisCharge to set
-     */
-    public void setpDisCharge(float pDisCharge) {
-        this.pDisCharge = pDisCharge;
-    }
-
-    /**
-     * @return the pLoad
-     */
-    public float getpLoad() {
-        return pLoad;
-    }
-
-    /**
-     * @param pLoad the pLoad to set
-     */
-    public void setpLoad(float pLoad) {
-        this.pLoad = pLoad;
-    }
-    
 }

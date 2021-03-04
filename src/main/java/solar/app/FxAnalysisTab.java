@@ -9,6 +9,9 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javax.measure.Quantity;
+import javax.measure.quantity.Energy;
+import javax.measure.quantity.Power;
 import solar.model.Components;
 import solar.model.DatedValue;
 import solar.model.DatedValueFilter;
@@ -16,6 +19,10 @@ import solar.model.Listener;
 import solar.model.Period;
 import solar.model.Record;
 import solar.model.RecordFilter;
+import static solar.model.SolarUnitsAndConstants.KILO_WATT;
+import static solar.model.SolarUnitsAndConstants.KILO_WATT_HOUR;
+import tech.units.indriya.quantity.Quantities;
+import static tech.units.indriya.unit.Units.YEAR;
 
 /**
  * End of day energy performance with smoothing.
@@ -95,29 +102,28 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         List<Record> endOfDays = new RecordFilter<>(records).endOfPeriod(Period.Day).result();
         for (Record r : endOfDays) {
 
-            totalCharge.add(new DatedValue(r.getDate(), r.geteChgDay()));
-            totalDischarge.add(new DatedValue(r.getDate(), r.geteDisChgDay()));
+            totalCharge.add(new DatedValue(r.getDate(), r.geteChgDay().getValue().doubleValue()));
+            totalDischarge.add(new DatedValue(r.getDate(), r.geteDisChgDay().getValue().doubleValue()));
 
-            totalPv1.add(new DatedValue(r.getDate(), r.getePv1Day()));
-            totalPv2.add(new DatedValue(r.getDate(), r.getePv2Day()));
-            totalPv3.add(new DatedValue(r.getDate(), r.getePv3Day()));
-            totalCombined.add(new DatedValue(r.getDate(), r.getePv1Day() + r.getePv2Day() + r.getePv3Day()));
+            totalPv1.add(new DatedValue(r.getDate(), r.getePv1Day().getValue().doubleValue()));
+            totalPv2.add(new DatedValue(r.getDate(), r.getePv2Day().getValue().doubleValue()));
+            totalPv3.add(new DatedValue(r.getDate(), r.getePv3Day().getValue().doubleValue()));
+            totalCombined.add(new DatedValue(r.getDate(), r.getePv1Day().add(r.getePv2Day()).add(r.getePv3Day()).getValue().doubleValue()));
 
             // there is a problem because load is only recorded as a power, not an energy.
             // have to reconstruct it
-            double eload = r.geteInvDay() + r.geteToUserDay() - r.geteToGridDay();
+            Quantity<Energy> eload = (r.geteInvDay().add(r.geteToUserDay()).subtract(r.geteToGridDay()));
 
-            totalInverter.add(new DatedValue(r.getDate(), r.geteInvDay()));
-            totalSelfUse.add(new DatedValue(r.getDate(), eload - r.geteToUserDay()));
-            totalExport.add(new DatedValue(r.getDate(), r.geteToGridDay()));
-            totalImport.add(new DatedValue(r.getDate(), r.geteToUserDay()));
-            totalConsumption.add(new DatedValue(r.getDate(), eload));
+            totalInverter.add(new DatedValue(r.getDate(), r.geteInvDay().getValue().doubleValue()));
+            totalSelfUse.add(new DatedValue(r.getDate(), eload.subtract(r.geteToUserDay()).getValue().doubleValue()));
+            totalExport.add(new DatedValue(r.getDate(), r.geteToGridDay().getValue().doubleValue()));
+            totalImport.add(new DatedValue(r.getDate(), r.geteToUserDay().getValue().doubleValue()));
+            totalConsumption.add(new DatedValue(r.getDate(), eload.getValue().doubleValue()));
         }
 
-        final double ratedPower = (components.getPv1().getRatedPower()
-                + components.getPv2().getRatedPower()
-                + components.getPv3().getRatedPower()); // W
-        final double ratedCapacity = ratedPower * 365 * 24 / 1000.0; // kWh
+        Quantity<Power> ratedPower = components.getPv1().getRatedPower().add(components.getPv2().getRatedPower()).add(components.getPv3().getRatedPower());
+
+        Quantity<Energy> ratedCapacity = ratedPower.multiply(Quantities.getQuantity(1,YEAR)).asType(Energy.class).to(KILO_WATT_HOUR);
 
         double totalGenTotal = new DatedValueFilter(totalInverter).total();
         double totalSelfUseTotal = new DatedValueFilter(totalSelfUse).total();
@@ -128,18 +134,18 @@ public class FxAnalysisTab extends FxAnalysisBaseTab implements Listener {
         consumptionBox.setText(String.format("%3.0f kWh", new DatedValueFilter(totalConsumption).total()));
         selfUseBox.setText(String.format("%3.0f kWh", new DatedValueFilter(totalSelfUse).total()));
         selfUseRatioBox.setText(String.format("%3.1f%%", 100 * totalSelfUseTotal / totalGenTotal));
-        capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGenTotal / ratedCapacity));
+        capacityFactorBox.setText(String.format("%3.1f%%", 100 * totalGenTotal / ratedCapacity.getValue().doubleValue()));
 
-        double batteryCapacity = components.getBattery().getNominalCapacity();
+        Quantity<Energy> batteryCapacity = components.getBattery().getNominalCapacity().to(KILO_WATT_HOUR);
         double chg = new DatedValueFilter(totalCharge).total();
         double dis = new DatedValueFilter(totalDischarge).total();
-        nominalCapacityBox.setText(String.format("%3.1f kWh", batteryCapacity / 1000.0));
+        nominalCapacityBox.setText(batteryCapacity.toString());
         chargeBox.setText(String.format("%3.1f kWh", chg));
         dischargeBox.setText(String.format("%3.1f kWh", dis));
         if (records.size() > 0) {
             double mean = dis / totalDischarge.size();
             dailyBox.setText(String.format("%3.1f kWh", mean));
-            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / (batteryCapacity / 1000.0)));
+            utilisationBox.setText(String.format("%3.1f%%", 100 * mean / batteryCapacity.getValue().doubleValue()));
             efficiencyBox.setText(String.format("%3.1f%%", 100 * dis / chg));
         }
         summaryTab.populate(totalPv1, totalPv2, totalPv3, totalCombined, null, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge, components);

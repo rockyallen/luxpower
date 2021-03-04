@@ -15,7 +15,7 @@ import static solar.model.Calculator.Weather;
  */
 public class SolarFactorsTab extends BorderPane {
 
-    private final Calculator calculator = new Calculator();
+    private final Calculator calculator =  Calculator.getInstance();
     protected final XYChart.Series attenuationTrace = new XYChart.Series();
     protected final XYChart.Series smoothedWeatherTrace = new XYChart.Series();
     protected final XYChart.Series rawWeatherTrace = new XYChart.Series();
