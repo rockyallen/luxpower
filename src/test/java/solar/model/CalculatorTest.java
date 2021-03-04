@@ -12,7 +12,7 @@ import solar.model.Calculator.Weather;
  */
 public class CalculatorTest {
 
-    private Calculator instance = new Calculator();
+    private Calculator instance = Calculator.getInstance();
 
     public CalculatorTest() {
     }

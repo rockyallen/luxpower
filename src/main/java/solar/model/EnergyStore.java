@@ -1,5 +1,15 @@
 package solar.model;
 
+import javax.measure.Quantity;
+import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Energy;
+import javax.measure.quantity.Power;
+import javax.measure.quantity.Time;
+import static solar.model.SolarUnitsAndConstants.*;
+import static tech.units.indriya.AbstractUnit.ONE;
+import tech.units.indriya.ComparableQuantity;
+import static tech.units.indriya.unit.Units.*;
+
 /**
  * Models a battery specifically, but could be used for any similar energy
  * store. Efficiency is charging efficiency, discharge efficiency is 100%.
@@ -16,15 +26,16 @@ package solar.model;
 public class EnergyStore {
 
     private final String name;
-    private final double actualCapacity;
-    private final double nominalCapacity;
-    private final double efficiency;
-    private final double pChargeMax;
-    private final double pDischargeMax;
+    private final String description;
+    private final ComparableQuantity<Energy> effectiveCapacity;
+    private final ComparableQuantity<Energy> nominalCapacity;
+    private final ComparableQuantity<Dimensionless> efficiency;
+    private final ComparableQuantity<Power> pChargeMax;
+    private final ComparableQuantity<Power> pDischargeMax;
 
-    private double currentEnergy = 0.0;
-    private double charge = 0.0;
-    private double discharge = 0;
+    private ComparableQuantity<Energy> currentEnergy = ZERO_ENERGY;
+    private ComparableQuantity<Energy> charge = ZERO_ENERGY;
+    private ComparableQuantity<Energy> discharge = ZERO_ENERGY;
 
     /**
      * @param name Short descriptive name
@@ -38,29 +49,38 @@ public class EnergyStore {
      * are not positive; effectiveCapacity is greater than nominalCapacity;
      * efficiency is not between 0.1 and 1.0.
      */
-    public EnergyStore(String name, String description, double nominalCapacity, double effectiveCapacity, double efficiency, double pChargeMax, double pDischargeMax) {
-        this.name = name;
-        this.nominalCapacity = nominalCapacity;
-        this.actualCapacity = effectiveCapacity;
-        this.efficiency = efficiency;
-        this.pChargeMax = pChargeMax;
-        this.pDischargeMax = pDischargeMax;
+    public EnergyStore(String name, String description,
+            ComparableQuantity<Energy> nominalCapacity,
+            ComparableQuantity<Energy> effectiveCapacity,
+            ComparableQuantity<Dimensionless> efficiency,
+            ComparableQuantity<Power> pChargeMax,
+            ComparableQuantity<Power> pDischargeMax) {
 
         if ("".equals(name)) {
             throw new IllegalArgumentException("name must not be blank");
         }
-        if (effectiveCapacity > nominalCapacity) {
+        if (efficiency.compareTo(ZERO_NUMBER) <= 0) {
+            throw new IllegalArgumentException("efficiency must be positive");
+        }
+        if (efficiency.compareTo(ONE_NUMBER) > 0) {
+            throw new IllegalArgumentException("efficiency must be less than 1");
+        }
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (effectiveCapacity.compareTo(nominalCapacity) > 0) {
             throw new IllegalArgumentException("effective capacity must be less than nominal (" + effectiveCapacity + "," + nominalCapacity + ")");
         }
-        if (effectiveCapacity < 0.0) {
+        if (effectiveCapacity.compareTo(ZERO_ENERGY) < 0) {
             throw new IllegalArgumentException("effective capacity must be greater than or equal to 0 (" + effectiveCapacity + ")");
         }
-        if (efficiency < 0.1) {
-            throw new IllegalArgumentException("efficiency must be greater than or equal to 0.1 (" + efficiency + ")");
-        }
-        if (efficiency > 1.0) {
-            throw new IllegalArgumentException("efficiency must be less than or equal to 1.0 (" + efficiency + ")");
-        }
+        this.name = name;
+        this.description = description;
+        this.nominalCapacity = nominalCapacity;
+        this.effectiveCapacity = effectiveCapacity;
+        this.efficiency = efficiency;
+        this.pChargeMax = pChargeMax;
+        this.pDischargeMax = pDischargeMax;
     }
 
     /**
@@ -74,30 +94,32 @@ public class EnergyStore {
      * between 0 and the lower of p and the maximum charge power and may be
      * further limited if the battery is full or nearly full.
      */
-    public double store(double p, double t) {
-        if (p <= 0.0) {
+    public ComparableQuantity<Power> store(ComparableQuantity<Power> p, ComparableQuantity<Time> t) {
+        if (p.compareTo(ZERO_POWER) <= 0) {
             throw new IllegalArgumentException("power demand must be +ve");
         }
-        if (t <= 0.0) {
+        if (t.compareTo(ZERO_TIME) <= 0) {
             throw new IllegalArgumentException("time step must be +ve");
         }
-        double retPower = 0.0;
+
+        ComparableQuantity<Power> retPower = ZERO_POWER;
         // not more than the maximum allowed
-        double p1 = Math.min(p, pChargeMax);
+        ComparableQuantity<Power> p1 = minimum(p, pChargeMax);
         // Can you store it all?
-        double energyOffered = p1 * t;
-        double toFill = (getEffectiveCapacity() - getCurrentEnergy()) / efficiency;
-        if (toFill > energyOffered) {
+        ComparableQuantity<Energy> energyOffered = p1.multiply(t).asType(Energy.class);
+
+        ComparableQuantity<Energy> toFill = effectiveCapacity.subtract(currentEnergy).divide(efficiency).asType(Energy.class);
+        if (toFill.compareTo(energyOffered) > 0) {
             // Yes, you can store it all
-            currentEnergy += energyOffered * efficiency;
+            currentEnergy = currentEnergy.add(energyOffered.multiply(efficiency).asType(Energy.class));
             retPower = p1;
         } else {
             // No, top it up and limit power
-            retPower = toFill / t;
-            currentEnergy = getEffectiveCapacity();
+            retPower = toFill.divide(t).asType(Power.class);
+            currentEnergy = effectiveCapacity;
         }
-        charge += retPower * t;
-        return retPower;
+        charge = charge.add(retPower.multiply(t).asType(Energy.class));
+        return retPower.to(WATT);
     }
 
     /**
@@ -113,29 +135,31 @@ public class EnergyStore {
      *
      * @return the average power delivered over time t.
      */
-    public double demand(double p, double t) {
-        if (p <= 0.0) {
+    public ComparableQuantity<Power> demand(ComparableQuantity<Power> p, ComparableQuantity<Time> t) {
+        if (p.compareTo(ZERO_POWER) <= 0) {
             throw new IllegalArgumentException("power demand must be +ve");
         }
-        if (t <= 0.0) {
+        if (t.compareTo(ZERO_TIME) <= 0) {
             throw new IllegalArgumentException("time step must be +ve");
         }
-        double retPower = 0.0;
 
-        double p1 = Math.min(p, pDischargeMax);
+        ComparableQuantity<Power> retPower = ZERO_POWER;
+
+        ComparableQuantity<Power> p1 = minimum(p, pDischargeMax);
 
         // Can you supply it all?
-        double energyRequested = p1 * t;
-        if (getCurrentEnergy() > energyRequested) {
+        ComparableQuantity<Energy> energyRequested = p1.multiply(t).asType(Energy.class);
+
+        if (currentEnergy.compareTo(energyRequested) > 0) {
             // yes, you can have it all
-            currentEnergy -= energyRequested;
+            currentEnergy = currentEnergy.subtract(energyRequested);
             retPower = p1;
         } else {
             // no, empty it and return average power
-            retPower = getCurrentEnergy() / t;
-            currentEnergy = 0.0;
+            retPower = currentEnergy.divide(t).asType(Power.class);
+            currentEnergy = ZERO_ENERGY;
         }
-        discharge += retPower * t;
+        discharge = discharge.add(retPower.multiply(t).asType(Energy.class));
         return retPower;
     }
 
@@ -144,16 +168,25 @@ public class EnergyStore {
      *
      * @return wh
      */
-    public double getEnergy() {
-        return getCurrentEnergy();
+    public ComparableQuantity<Energy> getEnergy() {
+        return currentEnergy;
     }
 
     /**
      * Resets charge and discharge log. Does NOT affect energy.
      */
     void resetLog() {
-        charge = 0.0;
-        discharge = 0.0;
+        charge = ZERO_ENERGY;
+        discharge = ZERO_ENERGY;
+    }
+
+    /**
+     * Initialise battery capacity without affecting charge log
+     *
+     * @param fraction
+     */
+    void setCharge(double fraction) {
+        currentEnergy = effectiveCapacity.multiply(fraction);
     }
 
     /**
@@ -161,8 +194,8 @@ public class EnergyStore {
      *
      * @return Wh
      */
-    public double getEffectiveCapacity() {
-        return getActualCapacity();
+    public ComparableQuantity<Energy> getEffectiveCapacity() {
+        return effectiveCapacity;
     }
 
     /**
@@ -170,8 +203,8 @@ public class EnergyStore {
      *
      * @return Wh
      */
-    public double getNominalCapacity() {
-        return getActualCapacity();
+    public ComparableQuantity<Energy> getNominalCapacity() {
+        return nominalCapacity;
     }
 
     public String getName() {
@@ -179,30 +212,23 @@ public class EnergyStore {
     }
 
     /**
-     * @return the actualCapacity Wh
-     */
-    public double getActualCapacity() {
-        return actualCapacity;
-    }
-
-    /**
      * @return the currentEnergy Wh
      */
-    public double getCurrentEnergy() {
+    public ComparableQuantity<Energy> getCurrentEnergy() {
         return currentEnergy;
     }
 
     /**
      * @return the total charge since logging started
      */
-    public double getCharge() {
+    public ComparableQuantity<Energy> getCharge() {
         return charge;
     }
 
     /**
      * @return the total discharge since logging started
      */
-    public double getDischarge() {
+    public ComparableQuantity<Energy> getDischarge() {
         return discharge;
     }
 
@@ -211,12 +237,13 @@ public class EnergyStore {
      *
      * @return 0.0-1.0
      */
-    public double getSoc() {
-        return currentEnergy / nominalCapacity;
+    public Quantity<Dimensionless> getSoc() {
+        return nominalCapacity.getValue().doubleValue() < 0.001 ? ZERO_NUMBER : currentEnergy.divide(nominalCapacity).asType(Dimensionless.class);
     }
 
     @Override
     public String toString() {
-        return "EnergyStore: name='" + name + "' nominal=" + nominalCapacity + " effective=" + actualCapacity + " charge=" + pChargeMax + " discharge=" + pDischargeMax + " SOC=" + getSoc() * 100 + "%";
+        return "EnergyStore: name='" + name + "' nominal=" + nominalCapacity + " effective=" + effectiveCapacity + " charge=" + pChargeMax + " discharge=" + pDischargeMax + " SOC=" + getSoc();
     }
+
 }

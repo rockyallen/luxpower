@@ -17,7 +17,7 @@ import solar.model.Calculator;
 public class SolarTab extends BorderPane {
 
     private final FxMonthControl monthControl = new FxMonthControl(1);
-    private final Calculator calculator = new Calculator();
+    private final Calculator calculator =  Calculator.getInstance();
     protected final XYChart.Series elevationTrace = new XYChart.Series();
     protected final XYChart.Series azimuthTrace = new XYChart.Series();
 

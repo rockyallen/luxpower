@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static solar.model.SolarUnitsAndConstants.*;
+import static tech.units.indriya.quantity.Quantities.*;
+import static tech.units.indriya.unit.Units.*;
 
 /**
  *
@@ -32,147 +35,102 @@ public class EnergyStoreTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of store method, of class EnergyStore.
-     */
     @Test
     public void testStore() {
-        EnergyStore instance = new EnergyStore("vvv", "", 10000, 10000, 1, 1000, 1000);
-        
-        assertEquals(instance.getEnergy(), 0.0, 0.0001);
+        EnergyStore instance = new EnergyStore("vvv", "",
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(100, PERCENT),
+                getQuantity(1.0, KILO_WATT),
+                getQuantity(1.0, KILO_WATT));
+
+        assertEquals(ZERO_ENERGY, instance.getEnergy());
 
         // enough space
-        instance.store(700,10);
-        assertEquals(7000, instance.getCurrentEnergy(), 0.0001);
+        instance.store(getQuantity(700, WATT), getQuantity(10, HOUR));
+        assertEquals(getQuantity(7000, WATT_HOUR), instance.getEnergy().to(WATT_HOUR));
         // filled
-        instance.store(700,10);
-        assertEquals(10000.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(getQuantity(700, WATT), getQuantity(10, HOUR));
+        assertEquals(getQuantity(10.0, KILO_WATT_HOUR), instance.getEnergy());
         // over filled
-        instance.store(700,10);
-        assertEquals(10000.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(getQuantity(700, WATT), getQuantity(10, HOUR));
+        assertEquals(getQuantity(10.0, KILO_WATT_HOUR), instance.getEnergy());
     }
 
-    /**
-     * Test of demand method, of class EnergyStore.
-     */
     @Test
     public void testDemandAndLog() {
-        EnergyStore instance = new EnergyStore("vvv", "", 10, 10, 1, 1000, 1000);
+        EnergyStore instance = new EnergyStore("vvv", "",
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(100, PERCENT),
+                getQuantity(10.0, KILO_WATT),
+                getQuantity(10.0, KILO_WATT));
 
-        instance.store(8.0,1);
+        instance.store(getQuantity(8, KILO_WATT), getQuantity(1, HOUR));
+        instance.demand(getQuantity(2, KILO_WATT), getQuantity(1, HOUR));
 
-        instance.demand(2.0,1);
-        assertEquals(6.0, instance.getCurrentEnergy(), 0.0001);
+        assertEquals(getQuantity(6, KILO_WATT_HOUR), instance.getEnergy().to(KILO_WATT_HOUR));
 
-        instance.store(3.0,1);
-        assertEquals(9.0, instance.getCurrentEnergy(), 0.0001);
+        instance.store(getQuantity(3, KILO_WATT), getQuantity(1, HOUR));
+        assertEquals(getQuantity(9, KILO_WATT_HOUR), instance.getEnergy().to(KILO_WATT_HOUR));
 
-        assertEquals(11.0, instance.getCharge(), 0.0001);
-        assertEquals(2.0, instance.getDischarge(), 0.0001);
+        assertEquals(getQuantity(11, KILO_WATT_HOUR), instance.getCharge().to(KILO_WATT_HOUR));
+        assertEquals(getQuantity(2, KILO_WATT_HOUR), instance.getDischarge().to(KILO_WATT_HOUR));
 
         instance.resetLog();
-        assertEquals(0.0, instance.getCharge(), 0.0001);
-        assertEquals(0.0, instance.getDischarge(), 0.0001);
+        assertEquals(ZERO_ENERGY, instance.getCharge().to(JOULE));
+        assertEquals(ZERO_ENERGY, instance.getDischarge().to(JOULE));
     }
 
     @Test
     public void testEfficiency() {
-        EnergyStore instance = new EnergyStore("vvv", "", 10, 10, 0.9, 1000, 1000);
 
-        instance.store(9.0,1);
+        EnergyStore instance = new EnergyStore("vvv", "",
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(90, PERCENT),
+                getQuantity(10.0, KILO_WATT),
+                getQuantity(10.0, KILO_WATT));
 
-        assertEquals(8.1, instance.getCurrentEnergy(), 0.0001);
-        assertEquals(9.0, instance.getCharge(), 0.0001);
+        instance.store(getQuantity(9, KILO_WATT), getQuantity(1, HOUR));
 
-        assertEquals(3.0, instance.demand(3.0,1), 0.0001);
-        assertEquals(3.0, instance.getDischarge(), 0.0001);
-        assertEquals(5.1, instance.getCurrentEnergy(), 0.0001);
+        assertEquals(getQuantity(8.1, KILO_WATT_HOUR), instance.getEnergy().to(KILO_WATT_HOUR));
+        assertEquals(getQuantity(9, KILO_WATT_HOUR), instance.getCharge());
+
+        assertEquals(getQuantity(3, KILO_WATT), instance.demand(getQuantity(3, KILO_WATT), getQuantity(1, HOUR)));
+        assertEquals(getQuantity(3, KILO_WATT_HOUR), instance.getDischarge());
+        assertEquals(getQuantity(5.1, KILO_WATT_HOUR), instance.getCurrentEnergy());
     }
 
-    /**
-     * Test of getEnergy method, of class EnergyStore.
-     */
     @Test
-    public void testGetEnergy() {
-//        System.out.println("getEnergy");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getEnergy();
+    public void testChargeLimiting() {
+
+        EnergyStore instance = new EnergyStore("vvv", "",
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(90, PERCENT),
+                getQuantity(1.0, KILO_WATT),
+                getQuantity(10.0, KILO_WATT));
+
+        // limits to 1 kW for 2 h
+        assertEquals(getQuantity(1.0, KILO_WATT), instance.store(getQuantity(3, KILO_WATT), getQuantity(2, HOUR)).to(KILO_WATT));
+        // 2 kw becomes 1.8 allowing for efficiency
+        assertEquals(getQuantity(1.8, KILO_WATT_HOUR), instance.getEnergy().to(KILO_WATT_HOUR));
     }
 
-    /**
-     * Test of resetLog method, of class EnergyStore.
-     */
     @Test
-    public void testResetLog() {
-        System.out.println("resetLog");
-        EnergyStore instance = null;
-    }
+    public void testDishargeLimiting() {
 
-    /**
-     * Test of getEffectiveCapacity method, of class EnergyStore.
-     */
-    @Test
-    public void testGetEffectiveCapacity() {
-//        System.out.println("getEffectiveCapacity");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getEffectiveCapacity();
-    }
+        EnergyStore instance = new EnergyStore("vvv", "",
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(10.0, KILO_WATT_HOUR),
+                getQuantity(90, PERCENT),
+                getQuantity(10.0, KILO_WATT),
+                getQuantity(1.0, KILO_WATT));
 
-    /**
-     * Test of getNominalCapacity method, of class EnergyStore.
-     */
-    @Test
-    public void testGetNominalCapacity() {
-//        System.out.println("getNominalCapacity");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getNominalCapacity();
+        instance.setCharge(0.5);
+        // limits to 1 kW for 2 h
+        assertEquals(getQuantity(1.0, KILO_WATT), instance.demand(getQuantity(3, KILO_WATT), getQuantity(2, HOUR)));
+        assertEquals(getQuantity(3, KILO_WATT_HOUR), instance.getEnergy().to(KILO_WATT_HOUR));
     }
-
-    /**
-     * Test of name method, of class EnergyStore.
-     */
-    @Test
-    public void testName() {
-//        System.out.println("name");
-//        EnergyStore instance = null;
-//        String expResult = "";
-//        String result = instance.name();
-    }
-
-    /**
-     * Test of getActualCapacity method, of class EnergyStore.
-     */
-    @Test
-    public void testGetActualCapacity() {
-//        System.out.println("getActualCapacity");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getActualCapacity();
-    }
-
-    /**
-     * Test of getCurrentEnergy method, of class EnergyStore.
-     */
-    @Test
-    public void testGetCurrentEnergy() {
-//        System.out.println("getCurrentEnergy");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getCurrentEnergy();
-    }
-
-    /**
-     * Test of getDischarge method, of class EnergyStore.
-     */
-    @Test
-    public void testGetDischarge() {
-//        System.out.println("getDischarge");
-//        EnergyStore instance = null;
-//        double expResult = 0.0;
-//        double result = instance.getDischarge();
-    }
-
 }

@@ -19,6 +19,10 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javax.measure.Quantity;
+import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Energy;
+import javax.measure.quantity.Power;
 import org.asciidoctor.Asciidoctor;
 import solar.model.Components;
 import solar.model.DatedValue;
@@ -26,8 +30,16 @@ import solar.model.DatedValueFilter;
 import solar.model.EnergyStore;
 import solar.model.Inverter;
 import solar.model.Period;
+import solar.model.QuantityFormatter;
+import solar.model.QuantityPrettyPrinter;
 import solar.model.Record;
 import solar.model.SolarArray;
+import static solar.model.SolarUnitsAndConstants.KILO_WATT;
+import static solar.model.SolarUnitsAndConstants.KILO_WATT_HOUR;
+import tech.units.indriya.quantity.Quantities;
+import static tech.units.indriya.quantity.Quantities.getQuantity;
+import static tech.units.indriya.unit.Units.DAY;
+import static tech.units.indriya.unit.Units.YEAR;
 
 /**
  * Energy yield tabulated by month and summarized for the year,
@@ -36,11 +48,27 @@ import solar.model.SolarArray;
  */
 public class FxSummaryTab extends FxHtmlTab {
 
-    private Collection<Record> records;
+    private final QuantityPrettyPrinter money = new QuantityFormatter()
+            .prependUnits(true).appendUnits(false)
+            .decimalFormat(new DecimalFormat("0.00"))
+            .separator(" ").getFormatter();
+    
+    private final QuantityPrettyPrinter nounits = new QuantityFormatter()
+            .appendUnits(false).prependUnits(false)
+            .decimalFormat(new DecimalFormat("#,##0.00"))
+            .separator(" ").getFormatter();
+    
+    private final QuantityPrettyPrinter general = new QuantityFormatter()
+            .prependUnits(false).appendUnits(true)
+            .decimalFormat(new DecimalFormat("#,##0.00"))
+            .separator(" ").getFormatter();
+    
+        SimpleDateFormat f = new SimpleDateFormat("MMM");
+
+        private Collection<Record> records;
     private String description;
     private Components components;
-    private double ratedPower; // W
-    private double ratedCapacity; // Wh
+
     private String csv = "Not generated";
 
     RadioButton rb1 = new RadioButton("Total");
@@ -160,8 +188,12 @@ public class FxSummaryTab extends FxHtmlTab {
 
     void analyse() {
 
-        ratedPower = (components.getPv1().getRatedPower() + components.getPv2().getRatedPower() + components.getPv3().getRatedPower()); // W
-        ratedCapacity = ratedPower * 365 * 24; // Wh
+        Quantity<Power> ratedPower = components.getPv1().getRatedPower()
+                .add(components.getPv2().getRatedPower())
+                .add(components.getPv3().getRatedPower());
+
+        Quantity<Energy> ratedCapacity = ratedPower.multiply(Quantities.getQuantity(1, YEAR))
+                .asType(Energy.class).to(KILO_WATT_HOUR);
 
         Period p = rb3.isSelected() ? Period.Day : (rb4.isSelected() ? Period.Week : Period.Month);
 
@@ -174,8 +206,8 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append(csv);
         sb.append("|===\n");
 
-        sb.append(String.format("Rated power: %3.1f kW\n\n", ratedPower / 1000.0));
-        sb.append(String.format("Rated capacity: %3.1f kWh\n", ratedCapacity / 1000.0));
+        sb.append("Rated power: ").append(general.toString(ratedPower.to(KILO_WATT))).append("\n\n");
+        sb.append("Rated capacity: ").append(general.toString(ratedCapacity.to(KILO_WATT_HOUR))).append("\n\n");
 
         sb.append("\n\n== Columns\n\n");
 
@@ -235,52 +267,55 @@ public class FxSummaryTab extends FxHtmlTab {
             filter.period(periodNumber, period);
 
             if (filter.size() > 0) {
-                DecimalFormat df = new DecimalFormat("#,##0.0");
 
                 double totalGenTotal = filter.total(); // kWh
 
-                sb.append(String.format("\"%3s\",", df.format(totalForPeriod(pv1, periodNumber, period))));
+                csv(sb, totalForPeriod(pv1, periodNumber, period));
 
-                sb.append(String.format("\"%3s\",", df.format(totalForPeriod(pv2, periodNumber, period))));
+                csv(sb, totalForPeriod(pv2, periodNumber, period));
 
                 double epv3 = totalForPeriod(pv3, periodNumber, period);
-                sb.append(String.format("\"%3s\",", df.format(epv3)));
+                csv(sb, epv3);
 
-                sb.append(String.format("\"%3s\",", df.format(totalForPeriod(totalCombined, periodNumber, period))));
+                csv(sb, totalForPeriod(totalCombined, periodNumber, period));
 
                 double eInverter = totalForPeriod(totalInverter, periodNumber, period);
-                sb.append(String.format("\"%3s\",", df.format(eInverter)));
+                csv(sb, eInverter);
 
                 double eImport = totalForPeriod(totalImport, periodNumber, period);
-                sb.append(String.format("\"%3s\",", df.format(eImport)));
+                csv(sb, eImport);
 
                 double eExport = totalForPeriod(totalExport, periodNumber, period);
-                sb.append(String.format("\"%3s\",", df.format(eExport)));
+                csv(sb, eImport);
 
-                sb.append(String.format("\"%3s\",", df.format(totalForPeriod(totalConsumption, periodNumber, period))));
+                csv(sb, totalForPeriod(totalConsumption, periodNumber, period));
 
-                sb.append(String.format("\"%3s\",", df.format(totalForPeriod(totalCharge, periodNumber, period))));
+                csv(sb, totalForPeriod(totalCharge, periodNumber, period));
 
                 double eDischarge = totalForPeriod(totalDischarge, periodNumber, period);
-                sb.append(String.format("\"%3s\",", df.format(eDischarge)));
+                csv(sb, eDischarge);
 
                 // annualise it
                 double annualMultiplier = 365.0 / period.days();
-                sb.append(String.format("%3.1f%%,", 100 * annualMultiplier * eDischarge / (components.getBattery().getNominalCapacity())));
+                sb.append(String.format("%3.1f%%,", 100 * annualMultiplier * eDischarge / (components.getBattery().getNominalCapacity().getValue().doubleValue())));
 
                 double eSelfUse = totalForPeriod(totalSelfUse, periodNumber, period); // kWh
-                sb.append(String.format("\"%3s\",", df.format(eSelfUse)));
+                csv(sb, eSelfUse);
 
                 sb.append(String.format("\"%3.1f%%\",", 100 * eSelfUse / eInverter));
 
-                sb.append(String.format("\"%3.1f%%\",", 100 * annualMultiplier * totalGenTotal / (ratedCapacity / 1000.0)));
+                Quantity<Energy> ratedCapacity = (components.getPv1().getRatedCapacity()
+                        .add(components.getPv2().getRatedCapacity())
+                        .add(components.getPv3().getRatedCapacity())).to(KILO_WATT_HOUR);
 
-                double bill
-                        = components.getCost().getStandingCharge() * period.days()
-                        + components.getCost().getImportPrice() * eImport
-                        - components.getCost().getFits() * epv3
-                        - components.getCost().getExportPrice() * eExport;
-                sb.append(String.format("\"£%3.2f\"\n", bill));
+                sb.append(String.format("\"%3.1f%%\",", 100 * annualMultiplier * totalGenTotal / ratedCapacity.getValue().doubleValue()));
+
+                Quantity<Dimensionless> bill = components.getCost().bill(
+                        getQuantity(period.days(), DAY),
+                        getQuantity(eImport, KILO_WATT_HOUR),
+                        getQuantity(eExport, KILO_WATT_HOUR),
+                        getQuantity(epv3, KILO_WATT_HOUR));
+                sb.append(money.toString(bill)).append("\n");
 
             } else {
                 for (int i = 0; i < 14; i++) {
@@ -321,8 +356,6 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("\"Capacity Factor\",");
         sb.append("\"Bill\"\n");
 
-        SimpleDateFormat f = new SimpleDateFormat("MMM");
-
         if (p == Period.Month) {
             for (int i = 0; i < 12; i++) {
                 sb.append(String.format("\"%s\",", f.format(new Date(100, i, 1))));
@@ -342,5 +375,14 @@ public class FxSummaryTab extends FxHtmlTab {
         sb.append("\"Year\",");
         doRow(sb, 1, Period.All, pv1, pv2, pv3, totalCombined, totalGen, totalInverter, totalSelfUse, totalExport, totalImport, totalConsumption, totalCharge, totalDischarge);
         return sb.toString();
+    }
+    DecimalFormat df = new DecimalFormat("#,##0.0");
+
+    private void csv(StringBuilder sb, double d) {
+        csv(sb, df.format(d));
+    }
+
+    private void csv(StringBuilder sb, String s) {
+        sb.append("\"").append(s).append("\",");
     }
 }

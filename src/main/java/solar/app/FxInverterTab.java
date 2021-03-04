@@ -14,6 +14,8 @@ import solar.model.Components;
 import solar.model.Inverter;
 import solar.model.Listener;
 import solar.model.Record;
+import static tech.units.indriya.quantity.Quantities.getQuantity;
+import static tech.units.indriya.unit.Units.WATT;
 
 /**
  * Graph inverter efficiencies for interest
@@ -83,7 +85,7 @@ public class FxInverterTab extends BorderPane implements Listener{
             XYChart.Series data = new XYChart.Series();
             data.setName(inv.name);
             for (double pin = 100.0; pin < MAXPOWER; pin += 50.0) {
-                double pout = inv.pout(pin);
+                double pout = inv.pout(getQuantity(pin,WATT)).getValue().doubleValue();
                 data.getData().add(new XYChart.Data(pin / 1000, 100 * pout / pin));
             }
             sc.getData().add(data);

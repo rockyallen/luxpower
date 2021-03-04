@@ -1,21 +1,14 @@
 package solar.model;
 
 import java.util.Arrays;
-import javax.measure.Quantity;
-import javax.measure.Unit;
-import javax.measure.quantity.Angle;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import tech.units.indriya.function.MultiplyConverter;
-import tech.units.indriya.quantity.Quantities;
-import tech.units.indriya.unit.TransformedUnit;
-import static tech.units.indriya.unit.Units.RADIAN;
-import static tech.units.indriya.unit.Units.SQUARE_METRE;
-import static tech.units.indriya.unit.Units.WATT;
 
 /**
  * Solar irradiance sums.
- *
+ * 
+ * @design Singleton
+ * 
  * @threadsafety Immutable
  */
 public class Calculator {
@@ -38,10 +31,6 @@ public class Calculator {
      */
     public static final double SURFACE_REFLECTIVITY = 0.2;
 
-    public static Unit<?> IRRADIANCE = WATT.divide(SQUARE_METRE);
-
-    public static final Quantity<?> STANDARD_IRRADIANCE = Quantities.getQuantity(1000.0, IRRADIANCE);
-    public static final Unit<Angle> DEGREE_ANGLE = new TransformedUnit<>("°", RADIAN, MultiplyConverter.of(180.0 / Math.PI));
     /**
      * Ordered by month
      */
@@ -58,6 +47,18 @@ public class Calculator {
     private static final double[] attmosphericAttenuations
             = {0.142, 0.142, 0.144, 0.156, 0.180, 0.196, 0.205, 0.207, 0.201, 0.177, 0.160, 0.149, 0.142, 0.142};
 
+    private static final Calculator instance = new Calculator();
+
+    private Calculator() {
+        SplineInterpolator li = new SplineInterpolator();
+        attenuation = li.interpolate(months, attmosphericAttenuations);
+        diffusion = li.interpolate(months, skyDiffusionFactors);
+    }
+
+    public static Calculator getInstance() {
+        return instance;
+    }
+
     public static int daysPerMonth(int month) {
         if (month < 0) {
             throw new IllegalArgumentException("Too small " + month);
@@ -70,12 +71,6 @@ public class Calculator {
 
     private static PolynomialSplineFunction attenuation;
     private static PolynomialSplineFunction diffusion;
-
-    public Calculator() {
-        SplineInterpolator li = new SplineInterpolator();
-        attenuation = li.interpolate(months, attmosphericAttenuations);
-        diffusion = li.interpolate(months, skyDiffusionFactors);
-    }
 
     public double getAttenuation(int dayNumber) {
         return attenuation.value(dayNumber / (DAYSPERYEAR / 12.0));
@@ -1649,5 +1644,4 @@ public class Calculator {
             return "Raw weather " + Arrays.toString(scaleFactors);
         }
     }
-
 }

@@ -1,14 +1,16 @@
 package solar.model;
 
-import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Area;
 import javax.measure.quantity.Power;
 import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Energy;
+import static solar.model.SolarUnitsAndConstants.*;
+import static tech.units.indriya.AbstractUnit.ONE;
+import tech.units.indriya.ComparableQuantity;
 import tech.units.indriya.quantity.Quantities;
-import static tech.units.indriya.unit.Units.RADIAN;
-import static tech.units.indriya.unit.Units.SQUARE_METRE;
-import static tech.units.indriya.unit.Units.WATT;
+import static tech.units.indriya.quantity.Quantities.getQuantity;
+import static tech.units.indriya.unit.Units.*;
 
 /**
  * A solar array, modelled as a single large panel.
@@ -19,34 +21,37 @@ import static tech.units.indriya.unit.Units.WATT;
  */
 public class SolarArray {
 
-    private static final Calculator calculator = new Calculator();
+    private static final Calculator calculator =  Calculator.getInstance();
     private final String name;
     private final String description;
-    private final Quantity<Angle> latitude;
-    private final Quantity<Angle> longitude;
+    private final ComparableQuantity<Angle> latitude;
+    private final ComparableQuantity<Angle> longitude;
     private final boolean azimuthTracking;
     private final boolean elevationTracking;
     /**
      * Sum of area of all modules
      */
-    private final Quantity<Area> area;
+    private final ComparableQuantity<Area> area;
     /**
      * Degrees
      */
-    private final Quantity<Angle> tilt;
+    private final ComparableQuantity<Angle> tilt;
     /**
      * Degrees
      */
-    private final Quantity<Angle> azimuth;
+    private final ComparableQuantity<Angle> azimuth;
     /**
      * Module efficiency from data sheet 0-1
      */
-    private final Quantity<Dimensionless> efficiency;
+    private final ComparableQuantity<Dimensionless> efficiency;
     /**
      * Power under standard illumination. Effectively kWp for the array in Watts
      */
-    private final Quantity<Power> power;
-    private final Quantity<Angle> standardMeridian;
+    private final ComparableQuantity<Power> power;
+    /**
+     *
+     */
+    private final ComparableQuantity<Angle> standardMeridian;
 
     /**
      *
@@ -66,39 +71,42 @@ public class SolarArray {
      */
     public SolarArray(String name,
             String description,
-            Quantity<Area> area,
-            Quantity<Angle> tilt,
-            Quantity<Angle> azimuth,
-            Quantity<Dimensionless> efficiency,
-            Quantity<Angle> latitude,
-            Quantity<Angle> longitude,
+            ComparableQuantity<Area> area,
+            ComparableQuantity<Angle> tilt,
+            ComparableQuantity<Angle> azimuth,
+            ComparableQuantity<Dimensionless> efficiency,
+            ComparableQuantity<Angle> latitude,
+            ComparableQuantity<Angle> longitude,
             boolean azimuthTracking,
             boolean elevationTracking
     ) {
         if ("".equals(name)) {
             throw new IllegalArgumentException("name must not be blank");
         }
+        if (efficiency.compareTo(ZERO_NUMBER) <= 0 ){
+            throw new IllegalArgumentException("efficiency must be positive");
+        }
+        if (efficiency.compareTo(ONE_NUMBER) > 0 ){
+            throw new IllegalArgumentException("efficiency must be less than 1");
+        }
         this.name = name;
         this.description = description;
-        this.area = area;
-        this.tilt = tilt;
-        this.azimuth = azimuth;
-        this.efficiency = efficiency;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.area = area.to(SQUARE_METRE);
+        this.tilt = tilt.to(DEGREE_ANGLE);
+        this.azimuth = azimuth.to(DEGREE_ANGLE);
+        this.efficiency = efficiency.to(ONE);
+        this.latitude = latitude.to(DEGREE_ANGLE);
+        this.longitude = longitude.to(DEGREE_ANGLE);
         this.azimuthTracking = azimuthTracking;
         this.elevationTracking = elevationTracking;
-        double p = area.to(SQUARE_METRE).getValue().doubleValue()
-                * Calculator.STANDARD_IRRADIANCE.getValue().doubleValue()
-                * efficiency.getValue().doubleValue();
-        this.power = Quantities.getQuantity(p, WATT);
-        this.standardMeridian = Quantities.getQuantity(0.0, Calculator.DEGREE_ANGLE); // Wrong in general, but OK for the UK
+        this.power = area.multiply(SolarUnitsAndConstants.STANDARD_IRRADIANCE).multiply(efficiency).asType(Power.class).to(WATT);
+        this.standardMeridian = Quantities.getQuantity(0.0, SolarUnitsAndConstants.DEGREE_ANGLE); // Wrong in general, but OK for the UK
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Array: '%s' %s power=%4.0f W ", name, description, getRatedPower()));
+        sb.append(String.format("Array: '%s' '%s' kWp=%s", name, description, power.to(KILO_WATT).toString()));
         sb.append(" tilt=");
         if (elevationTracking) {
             sb.append("tracking");
@@ -125,35 +133,45 @@ public class SolarArray {
      *
      * @return Power, Watts
      */
-    public double availablePower(int dayNumber, double hour) {
+    public ComparableQuantity<Power> availablePower(int dayNumber, double hour) {
+
         double arrayElevation = elevationTracking ? calculator.sunElevation(
-                latitude.to(Calculator.DEGREE_ANGLE).getValue().doubleValue(),
+                latitude.getValue().doubleValue(),
                 calculator.solarDeclination(dayNumber), hour)
-                : tilt.to(Calculator.DEGREE_ANGLE).getValue().doubleValue();
+                : tilt.getValue().doubleValue();
 
         double arrayAzimuth = azimuthTracking ? calculator.sunAzimuth(
-                latitude.to(Calculator.DEGREE_ANGLE).getValue().doubleValue(),
+                latitude.getValue().doubleValue(),
                 calculator.solarDeclination(dayNumber), hour)
-                : azimuth.to(Calculator.DEGREE_ANGLE).getValue().doubleValue();
+                : azimuth.getValue().doubleValue();
 
-        double insolation = calculator.insSolarRadiation(
+        ComparableQuantity<?> insolation = Quantities.getQuantity(calculator.insSolarRadiation(
                 hour,
-                latitude.to(Calculator.DEGREE_ANGLE).getValue().doubleValue(),
-                longitude.to(Calculator.DEGREE_ANGLE).getValue().doubleValue(),
-                azimuth.to(Calculator.DEGREE_ANGLE).getValue().doubleValue(),
+                latitude.getValue().doubleValue(),
+                longitude.getValue().doubleValue(),
+                azimuth.getValue().doubleValue(),
                 arrayElevation,
                 arrayAzimuth,
                 dayNumber,
                 Calculator.CN,
-                Calculator.SURFACE_REFLECTIVITY);
-        return Math.max(0, efficiency.getValue().doubleValue()
-                * area.getValue().doubleValue() * insolation);
+                Calculator.SURFACE_REFLECTIVITY), IRRADIANCE);
+
+        ComparableQuantity<Power> p = insolation.multiply(area).multiply(efficiency).asType(Power.class).to(KILO_WATT);
+        return p.getValue().doubleValue() <= 0.0
+                ? SolarUnitsAndConstants.ZERO_POWER : p;
     }
 
     /**
      * @return the power in Watts
      */
-    public double getRatedPower() {
-        return power.to(WATT).getValue().doubleValue();
+    public ComparableQuantity<Power> getRatedPower() {
+        return power;
+    }
+
+    /**
+     * @return Energy in kWh if it runs at the rated power for 1 year.
+     */
+    public ComparableQuantity<Energy> getRatedCapacity() {
+        return power.multiply(getQuantity(1,YEAR)).asType(Energy.class).to(KILO_WATT_HOUR);
     }
 }
